@@ -1,21 +1,19 @@
 <div align="center">
   <img src="assets/roomslogo.png" alt="Rooms Logo" width="400px" />
 
-  **A Secure, Local-First Multi-Agent Orchestration Framework**
+  A secure, local-first multi-agent orchestration framework.
 </div>
+
+<br/>
 
 <div align="center">
-
-<br>
-
-[![License](https://img.shields.io/badge/License-MIT-D6BCFA?style=flat-square)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.13%2B-90CDF4?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/Status-Experimental-4FD1C5?style=flat-square)](#)
-[![ARPA](https://img.shields.io/badge/Powered_by-ARPA_HLS-756f6a?style=flat-square)](https://arpacorp.net)
-
-<br>
-
+  <img src="https://img.shields.io/badge/License-MIT-e8c4c0?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/Python-3.13+-bbd4e8?style=flat-square" alt="Python Version">
+  <img src="https://img.shields.io/badge/Status-Experimental-c4d8c0?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/Powered_by-ARPA_HLS-cfc8dc?style=flat-square" alt="ARPA HLS">
 </div>
+
+<br/>
 
 ## Overview
 
