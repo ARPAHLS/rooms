@@ -14,7 +14,11 @@ def _score_agent_expertise(agent: Agent, context_text: str) -> int:
     if not agent.config.expertise:
         return 0
     context_lower = context_text.lower()
-    return sum(1 for kw in agent.config.expertise if kw.lower() in context_lower)
+    score = 0
+    for kw in agent.config.expertise:
+        if re.search(rf"\b{re.escape(kw.lower())}\b", context_lower):
+            score += 1
+    return score
 
 def _find_forced_agent(message: str, agents: List[Agent]) -> Optional[Agent]:
     """Detect if user explicitly addresses an agent by name via @Name or 'I want to hear X'.
@@ -55,6 +59,7 @@ class Session:
         self.turn_count = 0
         self._last_orchestrator_turn = -1
         self._forced_next_agent: Optional[Agent] = None  # Locked next agent from @mention or user direction
+        self._hitl_triggered = False  # Track if early HITL was already triggered for current turn
 
         # Build global introduction including user if provided
         agent_names = ', '.join([a.name for a in self.agents])
@@ -78,6 +83,9 @@ class Session:
         forced = _find_forced_agent(message, self.agents)
         if forced:
             self._forced_next_agent = forced
+        
+        # Reset HITL trigger on user input
+        self._hitl_triggered = False
 
     def get_agent_context(self, current_agent: Agent) -> List[Dict[str, str]]:
         """Format history into an LLM context including system prompt."""
@@ -196,9 +204,10 @@ class Session:
             return False
 
         # Early HITL: if the last agent's message addressed the user by name
-        if len(self.history) > 1:
+        if not self._hitl_triggered and len(self.history) > 1:
             last = self.history[-1]
             if last.get("role") not in ("system",) and _user_is_addressed(last.get("content", ""), self.user_profile):
+                self._hitl_triggered = True
                 return True
 
         return self.turn_count > 0 and self.turn_count % self.config.human_in_the_loop_turns == 0

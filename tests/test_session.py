@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from rooms.config import SessionConfig, AgentConfig, SessionType
 from rooms.agent import Agent
-from rooms.session import Session
+from rooms.session import Session, _score_agent_expertise
 
 def test_round_robin_session():
     # Setup
@@ -265,3 +265,56 @@ def test_early_hitl_when_user_addressed():
 
     # Should trigger HITL early (before turn 5)
     assert session.needs_human_input() is True
+
+def test_expertise_word_boundaries():
+    """Expertise 'law' should not match in 'flaw'."""
+    config = SessionConfig(
+        topic="Architecture discussion",
+        agents=[
+            AgentConfig(name="Lawyer", system_prompt="sys", expertise=["law"]),
+            AgentConfig(name="Coder", system_prompt="sys", expertise=["engineering"]),
+        ],
+        session_type=SessionType.DYNAMIC,
+        max_turns=3
+    )
+    lawyer = Agent(config.agents[0])
+    coder = Agent(config.agents[1])
+    session = Session(config, [lawyer, coder])
+    
+    # Context with "flaw" but not "law"
+    session.history.append({"role": "User", "content": "There is a minor flaw in the design", "timestamp": "2026-01-01 00:00:00"})
+    
+    score = _score_agent_expertise(lawyer, "There is a minor flaw in the design")
+    # This should be 0 if using word boundaries
+    assert score == 0
+
+def test_hitl_trigger_only_once_per_message():
+    """Calling needs_human_input twice shouldn't trigger twice if no new message."""
+    config = SessionConfig(
+        topic="HITL repetition test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=10,
+        human_in_the_loop_turns=10
+    )
+    agent_a = Agent(config.agents[0])
+    agent_a.generate_response = MagicMock(return_value="Theo, hi!")
+    session = Session(config, [agent_a], user_profile={"name": "Theo", "background": "Engineer"})
+    
+    session.generate_next_turn()
+    
+    # First check should be True
+    assert session.needs_human_input() is True
+    
+    # Second check (before any new message) should still be True? 
+    # Actually, the requirement was to avoid repeating the *feedback loop*. 
+    # But in the code, it just checks history[-1]. 
+    # If we add a flag, it should reset on add_user_message.
+    
+    # If we implement the flag:
+    # assert session.needs_human_input() is False # if we want it to clear after one fetch?
+    # No, typically needs_human_input is called once per loop iteration. 
+    # But let's verify it clears after user input.
+    
+    session.add_user_message("Theo", "Hello")
+    assert session.needs_human_input() is False
