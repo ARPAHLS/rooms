@@ -1,8 +1,12 @@
 import math
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 from .config import SessionConfig, SessionType
 from .agent import Agent
+
+def _now() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 class Session:
     def __init__(self, config: SessionConfig, agents: List[Agent], user_profile: Optional[Dict[str, str]] = None):
@@ -22,13 +26,13 @@ class Session:
             f"The room is active. Topic: {self.config.topic}\n"
             f"Participating Agents: {agent_names}{user_intro}\n"
         )
-        self.history.append({"role": "system", "content": self.global_intro})
+        self.history.append({"role": "system", "content": self.global_intro, "timestamp": _now()})
 
         self._agent_index = 0
 
     def add_user_message(self, username: str, message: str):
         """Inject a human message into the session history."""
-        self.history.append({"role": username, "content": message})
+        self.history.append({"role": username, "content": message, "timestamp": _now()})
 
     def get_agent_context(self, current_agent: Agent) -> List[Dict[str, str]]:
         """Format history into an LLM context."""
@@ -68,7 +72,7 @@ class Session:
             msg = orch_agent.generate_response(context)
             self.turn_count += 1  # Always increment, even for orchestrator turns
             if "PASS" not in msg:
-                turn_data = {"role": f"Orchestrator ({orch_agent.name})", "content": msg, "color": orch_agent.config.color}
+                turn_data = {"role": f"Orchestrator ({orch_agent.name})", "content": msg, "color": orch_agent.config.color, "timestamp": _now()}
                 self.history.append(turn_data)
                 return turn_data
             # If PASS, fall through to normal agent turn below
@@ -78,7 +82,7 @@ class Session:
         
         response_text = agent.generate_response(context)
         
-        turn_data = {"role": agent.name, "content": response_text, "color": agent.config.color}
+        turn_data = {"role": agent.name, "content": response_text, "color": agent.config.color, "timestamp": _now()}
         self.history.append(turn_data)
         self.turn_count += 1
         return turn_data

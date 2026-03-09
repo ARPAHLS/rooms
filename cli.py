@@ -219,11 +219,17 @@ def prompt_save(session: Session):
     console.print("\n[bold red]WARNING: Memory is ephemeral and private. If you exit, this conversation is lost.[/bold red]")
     save = Confirm.ask("Do you want to save this conversation transcript locally?", default=False)
     if save:
+        fmt = Prompt.ask("Save format", choices=["markdown", "csv"], default="markdown")
+        ext = "md" if fmt == "markdown" else "csv"
         path = Prompt.ask("Enter directory path to save to", default="./outputs")
-        filename = Prompt.ask("Enter filename", default=f"room_session_{session.turn_count}_turns.md")
+        
+        from rooms.storage import slugify_topic
+        slug = slugify_topic(session.config.topic)
+        default_name = f"{slug}.{ext}"
+        filename = Prompt.ask("Enter filename", default=default_name)
         full_path = os.path.join(path, filename)
         
-        save_transcript(session.history, full_path, format="markdown")
+        save_transcript(session.history, full_path, format=fmt)
         console.print(f"[bold green]Saved securely to {full_path}[/bold green]")
     else:
         console.print("[bold yellow]Conversation discarded. Privacy maintained.[/bold yellow]")
