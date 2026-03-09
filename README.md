@@ -39,6 +39,14 @@ The framework allows extreme granularity in handling session configurations:
 | **Logic Hooks** | **Runtime** | Dynamically load native `.py` files to act as agents. |
 | **Data Preservation** | **Ephemeral** | By default, RAM-only. Prompts for safe markdown export upon conclusion. |
 
+## Documentation Library
+
+For deeper insights into how to leverage and modify the framework, please refer to our dedicated documentation guides:
+
+- 📖 **[Architecture & LiteLLM Guide](docs/ARCHITECTURE.md)** - Understand our zero-leakage local API translation mapping.
+- 💡 **[Use Cases & Personas (Examples)](docs/EXAMPLES.md)** - Learn how to build deep, trauma-informed personas for Risk Mitigation, SRE Incident Reports, and Think Tanks.
+- 🧪 **[Testing Strategy](docs/TESTING.md)** - How to use `unittest.mock` to write deterministic validation tests for AI workflows.
+
 ## Project Structure
 
 ```bash
