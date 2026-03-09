@@ -57,6 +57,7 @@ For deeper insights into how to leverage and modify the framework, please refer 
 - [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand how local API routing, session memory, and agent selection work.
 - [Use Cases, Examples & Best Practices](docs/EXAMPLES.md) - Parameter cheat sheet, deep persona guide, scenario walkthroughs, and an edge case reference table.
 - [Testing Strategy](docs/TESTING.md) - How to write and run deterministic tests for multi-agent logic.
+- [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute to the project, report bugs, and follow our design philosophy.
 
 ## Project Structure
 

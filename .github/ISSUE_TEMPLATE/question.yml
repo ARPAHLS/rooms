@@ -1,0 +1,11 @@
+name: 💡 Question / Idea
+description: Ask a question or suggest an improvement
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question / Idea
+      description: What is on your mind?
+    validations:
+      required: true
