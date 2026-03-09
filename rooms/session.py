@@ -5,16 +5,22 @@ from .config import SessionConfig, SessionType
 from .agent import Agent
 
 class Session:
-    def __init__(self, config: SessionConfig, agents: List[Agent]):
+    def __init__(self, config: SessionConfig, agents: List[Agent], user_profile: Optional[Dict[str, str]] = None):
         self.config = config
         self.agents = agents
+        self.user_profile = user_profile  # {"name": "...", "background": "..."}
         self.history: List[Dict[str, str]] = []  # List of {"role": "username", "content": "msg"}
         self.turn_count = 0
+        self._last_orchestrator_turn = -1  # Track last orch turn to prevent re-triggering
         
-        # Build global introduction
+        # Build global introduction including user if provided
+        agent_names = ', '.join([a.name for a in self.agents])
+        user_intro = ""
+        if self.user_profile:
+            user_intro = f"\nUser Participant: {self.user_profile['name']} - {self.user_profile.get('background', '')}"
         self.global_intro = (
             f"The room is active. Topic: {self.config.topic}\n"
-            f"Participating Agents: {', '.join([a.name for a in self.agents])}\n"
+            f"Participating Agents: {agent_names}{user_intro}\n"
         )
         self.history.append({"role": "system", "content": self.global_intro})
 
@@ -48,17 +54,24 @@ class Session:
         if self.turn_count >= self.config.max_turns:
             return None
             
-        # Optional Orchestrator Intervention (runs every 3 turns if orchestrator is enabled)
-        if self.config.orchestrator and self.turn_count > 0 and self.turn_count % 3 == 0:
+        # Optional Orchestrator Intervention (runs every 3 turns, but only ONCE per interval)
+        if (
+            self.config.orchestrator
+            and self.turn_count > 0
+            and self.turn_count % 3 == 0
+            and self._last_orchestrator_turn != self.turn_count  # prevent re-triggering
+        ):
+            self._last_orchestrator_turn = self.turn_count
             orch_agent = Agent(self.config.orchestrator)
             context = self.get_agent_context(orch_agent)
             
-            # Orchestrator decides if it needs to speak
             msg = orch_agent.generate_response(context)
-            if "PASS" not in msg:  # Simple mechanic: if it wants to stay silent, it generates "PASS"
+            self.turn_count += 1  # Always increment, even for orchestrator turns
+            if "PASS" not in msg:
                 turn_data = {"role": f"Orchestrator ({orch_agent.name})", "content": msg, "color": orch_agent.config.color}
                 self.history.append(turn_data)
                 return turn_data
+            # If PASS, fall through to normal agent turn below
             
         agent = self._select_next_agent()
         context = self.get_agent_context(agent)

@@ -3,6 +3,7 @@ import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
+from rich.rule import Rule
 
 from rooms.config import SessionConfig, AgentConfig, SessionType, ModelType
 from rooms.agent import Agent
@@ -89,6 +90,13 @@ def create_custom_agent_wizard() -> AgentConfig:
 def main_menu():
     console.print(Panel.fit("[bold magenta]Multi-Agent Room Framework[/bold magenta]", subtitle="Advanced Scenario Wizard"))
     
+    # 0. User Profile
+    console.print("\n[bold cyan]--- 0. Your Profile ---[/bold cyan]")
+    console.print("[dim]This helps agents treat you as an equal participant in the room.[/dim]")
+    user_name = Prompt.ask("Your name (or alias)", default="User")
+    user_background = Prompt.ask("Brief background or role (e.g. 'CTO with 15 years in cloud infrastructure')", default="")
+    user_profile = {"name": user_name, "background": user_background}
+
     # 1. Session Basics
     console.print("\n[bold cyan]--- 1. Session Setup ---[/bold cyan]")
     topic = Prompt.ask("Enter the Topic or Problem statement for this room")
@@ -168,10 +176,10 @@ def main_menu():
     )
 
     console.print("\n[bold yellow]Starting Room Session...[/bold yellow]")
-    run_session(session_config, agents)
+    run_session(session_config, agents, user_profile)
 
-def run_session(config: SessionConfig, agents: list[Agent]):
-    session = Session(config, agents)
+def run_session(config: SessionConfig, agents: list[Agent], user_profile: dict = None):
+    session = Session(config, agents, user_profile=user_profile)
     
     console.print(Panel(session.global_intro, title="System Introduction", border_style="bold grey53"))
     
@@ -179,12 +187,15 @@ def run_session(config: SessionConfig, agents: list[Agent]):
         while session.turn_count < config.max_turns:
             # Human in the loop logic
             if session.needs_human_input():
-                console.print("\n[bold magenta]--- Human Input Required ---[/bold magenta]")
-                user_msg = Prompt.ask("Your input to the agents")
+                console.print("")
+                console.rule("[bold white on dark_orange] Your Turn [/bold white on dark_orange]")
+                user_display_name = user_profile.get("name", "User") if user_profile else "User"
+                user_msg = Prompt.ask(f"[bold white]{user_display_name}[/bold white]")
                 if user_msg.lower() in ['exit', 'quit']:
                     console.print("[yellow]Session interrupted by user.[/yellow]")
                     break
-                session.add_user_message("User", user_msg)
+                session.add_user_message(user_display_name, user_msg)
+                console.print(Panel(user_msg, title=f"[bold white]{user_display_name}[/bold white]", border_style="white", padding=(0, 1)))
             
             # Generate next agent turn
             console.print("[dim]Thinking...[/dim]", end="\r")
