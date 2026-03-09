@@ -1,0 +1,23 @@
+# Environments
+venv/
+env/
+.env
+
+# Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Project Outputs
+outputs/*
+!outputs/.gitkeep
