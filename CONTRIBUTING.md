@@ -41,6 +41,13 @@ All CLI and documentation updates should prioritize a premium, modern feel.
 **Zero-Leakage**
 Be cautious with third-party integrations that might leak data.
 
+## Automated Checks
+Every push and Pull Request is automatically verified by our GitHub Actions CI/CD pipeline, which runs:
+- **Style Checks**: Code formatting and linting via `flake8`.
+- **Logic Verification**: Full suite of `pytest` unit tests for turn orchestration, expertise scoring, and session memory.
+
+Ensure your changes pass locally before submitting to maintain the build status.
+
 ## Project Roadmap
 Check our [GitHub Issues](https://github.com/arpahls/Rooms/issues) to see what we are currently working on.
 

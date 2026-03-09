@@ -78,3 +78,9 @@ If you do not want to use LiteLLM at all, the framework allows you to inject arb
 4. Provide the path to `my_model.py` and the exact name of the function you wrote.
 
 The framework will dynamically import your file at runtime and use it exclusively for that agent's turns.
+
+## CI/CD and Robustness
+To ensure the framework remains stable as it grows, we maintain a comprehensive CI/CD pipeline using **GitHub Actions**. Every contribution is automatically tested against Python 3.13 for:
+- **Linting**: High-standard code hygiene via `flake8`.
+- **Logic Robustness**: Detailed edge-case testing including word-boundary expertise matching and non-repeating HITL triggers.
+- **Regression Testing**: Ensuring core orchestration types (Round Robin, Dynamic, Argumentative) remain deterministic.
