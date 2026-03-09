@@ -23,7 +23,7 @@ PYTHONPATH=. python -m pytest tests/ -v
 
 > **Note**: Running `python tests/test_session.py` directly will fail with a `ModuleNotFoundError`. Always use `pytest`.
 
-## Current Test Coverage (10 tests)
+## Current Test Coverage (12 tests)
 
 | Test | What It Verifies |
 |---|---|
@@ -37,6 +37,8 @@ PYTHONPATH=. python -m pytest tests/ -v
 | `test_at_mention_forces_agent` | `@AgentName` in user input forces that agent to respond next |
 | `test_expertise_scoring_dynamic` | Best-matching expertise agent is selected in `dynamic` mode |
 | `test_early_hitl_when_user_addressed` | `needs_human_input()` triggers immediately when user is named |
+| `test_expertise_word_boundaries` | Strict keyword matching using word boundaries (e.g., `law` vs `flaw`) |
+| `test_hitl_trigger_only_once_per_message` | Ensures HITL pause doesn't trigger repeatedly for the same event |
 
 ## How to Write Custom Tests
 

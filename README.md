@@ -9,7 +9,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/License-MIT-e8c4c0?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/Python-3.13+-bbd4e8?style=flat-square" alt="Python Version">
-  <img src="https://img.shields.io/github/actions/workflow/status/arpahls/Rooms/ci.yml?branch=main&style=flat-square&color=c4d8c0&label=CI" alt="Build Status">
   <img src="https://img.shields.io/badge/Status-Experimental-c4d8c0?style=flat-square" alt="Status">
   <img src="https://img.shields.io/badge/Powered_by-ARPA_HLS-cfc8dc?style=flat-square" alt="ARPA HLS">
 </div>
@@ -119,11 +118,6 @@ $env:PYTHONPATH="."; python -m pytest tests/ -v
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Roadmap & Progress
-
-We are actively developing the next generation of local-first orchestration. 
-- **Immediate**: Configurable orchestration intervals, inference timeouts, and refined HITL triggers.
-- **Short-Term**: Programmatic APIs, headless execution, and rich architectural diagrams.
-- **Long-Term**: Persistent agent memory, session serialization, and plugin-based architectures.
 
 Track our active progress on the [GitHub Issues](https://github.com/arpahls/Rooms/issues) board.
 
