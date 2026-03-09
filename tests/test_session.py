@@ -30,11 +30,13 @@ def test_round_robin_session():
     t1 = session.generate_next_turn()
     assert t1["role"] == "AgentA"
     assert "A response" in t1["content"]
+    assert "timestamp" in t1, "Turn data should include a timestamp"
     
     # Turn 2
     t2 = session.generate_next_turn()
     assert t2["role"] == "AgentB"
     assert "B response" in t2["content"]
+    assert "timestamp" in t2
     
     # Check max turns
     t3 = session.generate_next_turn()
@@ -141,6 +143,125 @@ def test_custom_function_execution():
         turn1 = session.generate_next_turn()
         assert turn1["role"] == "Custom Agent"
         assert turn1["content"] == "Hello from custom script!"
+        assert "timestamp" in turn1
         
     finally:
         os.remove(temp_path)
+
+def test_user_profile_in_session():
+    """Verify that a user profile is embedded in the session intro."""
+    config = SessionConfig(
+        topic="User Profile Test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=1
+    )
+    agent_a = Agent(config.agents[0])
+    agent_a.generate_response = MagicMock(return_value="ok")
+    
+    user_profile = {"name": "Theo", "background": "AI researcher"}
+    session = Session(config, [agent_a], user_profile=user_profile)
+    
+    assert "Theo" in session.global_intro
+    assert "AI researcher" in session.global_intro
+
+def test_add_user_message_timestamp():
+    """Verify that user messages injected into history include timestamps."""
+    config = SessionConfig(
+        topic="Timestamp Test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=3
+    )
+    agent_a = Agent(config.agents[0])
+    session = Session(config, [agent_a])
+    session.add_user_message("Theo", "Hello agents!")
+
+    user_msgs = [m for m in session.history if m["role"] == "Theo"]
+    assert len(user_msgs) == 1
+    assert "timestamp" in user_msgs[0]
+    assert user_msgs[0]["content"] == "Hello agents!"
+
+def test_pass_mechanic_skips_turn():
+    """An agent responding with PASS should have turn skipped (not added to history)."""
+    config = SessionConfig(
+        topic="Pass Test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=2
+    )
+    agent_a = Agent(config.agents[0])
+    agent_a.generate_response = MagicMock(return_value="PASS")
+    session = Session(config, [agent_a])
+
+    t1 = session.generate_next_turn()
+    assert t1 is not None
+    assert t1.get("skipped") is True
+    # Skipped turns should NOT appear in visible history
+    visible = [m for m in session.history if m.get("role") == "AgentA"]
+    assert len(visible) == 0
+
+def test_at_mention_forces_agent():
+    """User typing @AgentB should force AgentB to respond next."""
+    config = SessionConfig(
+        topic="Mention Test",
+        agents=[
+            AgentConfig(name="AgentA", system_prompt="SysA"),
+            AgentConfig(name="AgentB", system_prompt="SysB"),
+        ],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=5,
+        human_in_the_loop_turns=0
+    )
+    agent_a = Agent(config.agents[0])
+    agent_b = Agent(config.agents[1])
+    agent_a.generate_response = MagicMock(return_value="A response")
+    agent_b.generate_response = MagicMock(return_value="B response")
+
+    session = Session(config, [agent_a, agent_b])
+    # User addresses AgentB explicitly
+    session.add_user_message("User", "@AgentB what do you think?")
+
+    t1 = session.generate_next_turn()
+    assert t1["role"] == "AgentB", "Forced agent should respond first"
+
+def test_expertise_scoring_dynamic():
+    """In dynamic mode, agent with matching expertise should be preferred."""
+    config = SessionConfig(
+        topic="Technical architecture question",
+        agents=[
+            AgentConfig(name="Lawyer", system_prompt="sys", expertise=["law", "contracts"]),
+            AgentConfig(name="Coder", system_prompt="sys", expertise=["engineering", "technical", "architecture"]),
+        ],
+        session_type=SessionType.DYNAMIC,
+        max_turns=5
+    )
+    lawyer = Agent(config.agents[0])
+    coder = Agent(config.agents[1])
+    lawyer.generate_response = MagicMock(return_value="Legal response")
+    coder.generate_response = MagicMock(return_value="Tech response")
+
+    session = Session(config, [lawyer, coder])
+    # Seed message with technical context to score Coder higher
+    session.history.append({"role": "system", "content": "We need a technical architecture solution", "timestamp": "2026-01-01 00:00:00"})
+
+    t1 = session.generate_next_turn()
+    assert t1["role"] == "Coder", "Higher-scoring expertise agent should be selected in dynamic mode"
+
+def test_early_hitl_when_user_addressed():
+    """needs_human_input() should return True if last message addressed the user by name."""
+    config = SessionConfig(
+        topic="Early HITL Test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=10,
+        human_in_the_loop_turns=5  # Interval is 5, but we expect early trigger
+    )
+    agent_a = Agent(config.agents[0])
+    agent_a.generate_response = MagicMock(return_value="Theo, what do you think about this?")
+
+    session = Session(config, [agent_a], user_profile={"name": "Theo", "background": "Engineer"})
+    session.generate_next_turn()  # Agent addresses "Theo" in its reply
+
+    # Should trigger HITL early (before turn 5)
+    assert session.needs_human_input() is True

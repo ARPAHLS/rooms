@@ -185,29 +185,35 @@ def run_session(config: SessionConfig, agents: list[Agent], user_profile: dict =
     
     try:
         while session.turn_count < config.max_turns:
-            # Human in the loop logic
+            # Human in the loop logic (interval OR early trigger if user is addressed)
             if session.needs_human_input():
                 console.print("")
                 console.rule("[bold white on dark_orange] Your Turn [/bold white on dark_orange]")
                 user_display_name = user_profile.get("name", "User") if user_profile else "User"
+                console.print("[dim]Tip: type @AgentName to force a specific agent to respond next.[/dim]")
                 user_msg = Prompt.ask(f"[bold white]{user_display_name}[/bold white]")
                 if user_msg.lower() in ['exit', 'quit']:
                     console.print("[yellow]Session interrupted by user.[/yellow]")
                     break
                 session.add_user_message(user_display_name, user_msg)
                 console.print(Panel(user_msg, title=f"[bold white]{user_display_name}[/bold white]", border_style="white", padding=(0, 1)))
-            
+
             # Generate next agent turn
             console.print("[dim]Thinking...[/dim]", end="\r")
-            
+
             next_turn = session.generate_next_turn()
             if not next_turn:
                 break
-            
-            # Print turn
+
+            # Silently skip PASS turns — agent had nothing to add
+            if next_turn.get("skipped"):
+                console.print(f"[dim]{next_turn['role']} passed.[/dim]", end="\r")
+                continue
+
+            # Print turn with agent's color
             color = next_turn.get("color", "blue")
             console.print(f"\n[bold {color}]{next_turn['role']}:[/bold {color}]")
-            console.print(next_turn['content'])
+            console.print(next_turn["content"])
             
     except KeyboardInterrupt:
         console.print("\n[yellow]Session interrupted via keyboard.[/yellow]")

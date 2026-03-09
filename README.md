@@ -23,11 +23,16 @@
 ## Key Features
 
 - **Local Priority Integration**: Zero-leakage API routing via `litellm`. Seamlessly integrates with local offline instances.
-- **Dynamic Turn Orchestration**: Agents can interact via `round_robin`, `argumentative` debates, or `dynamic` relevance-based conversational flows.
-- **Deep Personas**: Configure intricate agent backgrounds, expertise, and behavioral instructions dynamically per session.
-- **Custom Architectures**: Bypass standard LLMs entirely and specify custom Python functions (`model_type = custom_function`) for specific agent inference.
-- **Human-In-The-Loop**: Inject user instructions and steer the conversation dynamically based on specific interval thresholds.
-- **Global Orchestrator**: Deploy a designated room moderator to summarize progress or steer off-topic agents iteratively.
+- **Dynamic Turn Orchestration**: Agents interact via `round_robin`, `argumentative`, or `dynamic` relevance-based conversational flows.
+- **Expertise-Weighted Selection**: In `dynamic` mode, agents are scored against the live topic context — the most relevant expert speaks next.
+- **User-Directed Addressing**: Type `@AgentName` in any input to force a specific agent to respond next, bypassing automatic scoring.
+- **PASS Mechanic**: Agents may respond with `PASS` if they have nothing meaningful to add, silently skipping their turn and keeping the flow clean.
+- **Deep Personas**: Configure intricate agent backgrounds and behavioral instructions dynamically per session.
+- **Custom Architectures**: Bypass standard LLMs entirely and plug in custom Python functions for specific agent inference.
+- **Human-In-The-Loop**: Inject user instructions at defined intervals — or instantly when an agent directly addresses the user by name.
+- **User Profile & Identity**: Name and background provided at session start; agents treat the user as an equal room participant.
+- **Global Orchestrator**: A designated room moderator that fires every N turns to summarize or redirect agents, with no runaway loop risk.
+- **Timestamped Session Memory**: All turns, messages, and system events are tagged with precise timestamps for full auditability.
 
 ## Framework Capabilities
 
@@ -37,15 +42,19 @@ The framework allows extreme granularity in handling session configurations:
 | :--- | :--- | :--- |
 | **Generative Control** | **Per-Agent** | Set `temperature`, `max_tokens`, and system prompts individually. |
 | **Logic Hooks** | **Runtime** | Dynamically load native `.py` files to act as agents. |
-| **Data Preservation** | **Ephemeral** | By default, RAM-only. Prompts for safe markdown export upon conclusion. |
+| **Data Preservation** | **Ephemeral** | RAM-only by default. Prompted to export as Markdown or CSV on exit. |
+| **Session Memory** | **Full History** | Timestamped history shared across all participants throughout the session. |
+| **User Identity** | **Per-Session** | User name and background injected into room intro for agent awareness. |
+| **Expert Routing** | **Dynamic** | Agents scored by expertise against live context — best fit speaks next. |
+| **Forced Addressing** | **On-Demand** | `@AgentName` in any message forces that agent's next response. |
 
 ## Documentation Library
 
 For deeper insights into how to leverage and modify the framework, please refer to our dedicated documentation guides:
 
-- [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand our zero-leakage local API translation mapping.
-- [Use Cases & Personas (Examples)](docs/EXAMPLES.md) - Learn how to build deep, trauma-informed personas for Risk Mitigation, SRE Incident Reports, and Think Tanks.
-- [Testing Strategy](docs/TESTING.md) - How to use `unittest.mock` to write deterministic validation tests for AI workflows.
+- [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand how local API routing, session memory, and agent selection work.
+- [Use Cases & Personas (Examples)](docs/EXAMPLES.md) - Learn how to build deep personas for Risk Mitigation, SRE Incident Reports, and Think Tanks.
+- [Testing Strategy](docs/TESTING.md) - How to write and run deterministic tests for multi-agent logic.
 
 ## Project Structure
 
@@ -87,11 +96,18 @@ pip install -r requirements.txt
 ```bash
 python cli.py
 ```
-Follow the robust wizard prompts to define the room's overarching goal, add custom or default participants, assign an orchestrator, and set conversational rules.
+The wizard will step you through:
+- Setting your user profile (name and background)
+- Defining the session topic and turn limits
+- Inviting default or custom agents with individual temperatures and system prompts
+- Optionally assigning a Global Orchestrator
+
+During a session, type `@AgentName` in any user input to force a specific agent to respond next.
 
 **Run Tests**
 ```bash
-pytest tests/
+# Always run via pytest with PYTHONPATH set:
+$env:PYTHONPATH="."; python -m pytest tests/ -v
 ```
 
 ## License

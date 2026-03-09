@@ -14,6 +14,60 @@ Because the request never leaves your computer, **there are no API keys required
 
 When the Agents reply to you in the terminal, it means your computer's local CPU/GPU is quietly processing the inference via the Ollama application running in your background!
 
+## Session Memory & Timestamps
+All conversation history is held in RAM for the duration of the session. Each entry — agent turn, user message, and system introduction — is tagged with a `timestamp` (format: `YYYY-MM-DD HH:MM:SS`). This makes transcripts auditable without any external database.
+
+The history is accessible internally to all agents via `Session.get_agent_context()`, which formats it into the LLM-standard `role/content` format before passing it to each model.
+
+## Saving Transcripts
+At the end of a session, the user is prompted to optionally save. Two formats are available:
+
+- **Markdown (`.md`)**: Human-readable transcript with speaker headings and timestamps.
+- **CSV (`.csv`)**: Machine-parseable table with columns: `Timestamp`, `Speaker`, `Message`.
+
+The filename is auto-suggested from a short slug of the session topic (e.g. `bioethics_of_designer_babies.md`). System bootstrap messages are excluded from saved output.
+
+## User Profile & Participant Identity
+The wizard captures a **user name and background** before the session starts. This is injected into the global session introduction, so all agents are explicitly informed of who the human participant is and can treat them as an equal voice in the room.
+
+## Smart Agent Selection
+
+The framework goes beyond simple rotation with an intelligent selection system for `dynamic` sessions.
+
+### Expertise-Weighted Scoring
+Each `AgentConfig` has an `expertise` list (e.g., `["law", "contracts", "compliance"]`). In `dynamic` mode, before each turn the session scores all available agents against the last 5 messages in the history. The agent with the most matching keywords in the live conversation context is selected to speak next. 
+
+This means a room with a lawyer and an engineer will naturally shift voice depending on whether the topic drifts toward legal frameworks or technical implementation.
+
+### User-Directed Addressing (`@AgentName`)
+At any human input prompt, the user may type `@AgentName` to lock the next response to that specific agent. The `add_user_message()` method parses the message for `@mentions` as well as natural patterns (e.g., *"What does Elena think?"*) and stores the forced agent. It is consumed on the next `generate_next_turn()` call and then cleared.
+
+### PASS Mechanic
+Agents can respond with just `PASS` if they genuinely have nothing meaningful to add. The session detects this, increments the turn count, marks the turn as `skipped: True`, and does not add it to the visible history. The CLI renders these silently. This prevents verbose filler text that degrades the quality of the transcript.
+
+### Early Human-In-The-Loop Trigger
+Beyond the configured turn interval, the `needs_human_input()` method performs an additional check: if the **last agent message explicitly addresses the user by name**, the HITL prompt fires immediately. This ensures the conversation never inadvertently "speaks for" the human participant.
+
+**Decision Flow:**
+```
+generate_next_turn()
+    ↓
+Orchestrator due? → speak (or PASS → skip)
+    ↓
+_forced_next_agent set? → use it, clear it
+    ↓
+session_type = DYNAMIC?
+    → @mention in last message? → forced agent
+    → Score all agents by expertise → pick best
+    → fallback: round robin
+    ↓
+agent.generate_response()
+    ↓
+response == "PASS"? → skip, return {skipped: True}
+    ↓
+append to history with timestamp, return turn_data
+```
+
 ## Custom Model Integrations (Bring Your Own Code)
 
 If you do not want to use LiteLLM at all, the framework allows you to inject arbitrary Python scripts as the "brain" for an agent.
