@@ -1,8 +1,12 @@
 <div align="center">
+  <img src="assets/rooms_logo.png" alt="Rooms Logo" width="400px" />
+
+  **A Secure, Local-First Multi-Agent Orchestration Framework**
+</div>
+
+<div align="center">
 
 <br>
-
-**A Secure, Local-First Multi-Agent Orchestration Framework**
 
 [![License](https://img.shields.io/badge/License-MIT-D6BCFA?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.13%2B-90CDF4?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
