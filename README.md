@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/rooms_logo.png" alt="Rooms Logo" width="400px" />
+  <img src="assets/roomslogo.png" alt="Rooms Logo" width="400px" />
 
   **A Secure, Local-First Multi-Agent Orchestration Framework**
 </div>
