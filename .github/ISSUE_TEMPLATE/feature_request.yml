@@ -21,6 +21,17 @@ body:
     attributes:
       label: Alternatives Considered
       description: A clear and concise description of any alternative solutions or features you've considered.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How critical is this feature?
+      options:
+        - "Low 🟢"
+        - "Medium 🟡"
+        - "High 🔴"
+    validations:
+      required: true
   - type: textarea
     id: additional
     attributes:
