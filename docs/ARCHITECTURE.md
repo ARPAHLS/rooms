@@ -49,23 +49,33 @@ Agents can respond with just `PASS` if they genuinely have nothing meaningful to
 Beyond the configured turn interval, the `needs_human_input()` method performs an additional check: if the **last agent message explicitly addresses the user by name**, the HITL prompt fires immediately. This ensures the conversation never inadvertently "speaks for" the human participant.
 
 **Decision Flow:**
-```
-generate_next_turn()
-    ↓
-Orchestrator due? → speak (or PASS → skip)
-    ↓
-_forced_next_agent set? → use it, clear it
-    ↓
-session_type = DYNAMIC?
-    → @mention in last message? → forced agent
-    → Score all agents by expertise → pick best
-    → fallback: round robin
-    ↓
-agent.generate_response()
-    ↓
-response == "PASS"? → skip, return {skipped: True}
-    ↓
-append to history with timestamp, return turn_data
+```mermaid
+flowchart TD
+
+A[generate_next_turn()] --> B{Orchestrator due?}
+B -->|Yes| C[Speak or PASS → skip]
+B -->|No| D{_forced_next_agent set?}
+
+D -->|Yes| E[Use forced agent and clear flag]
+D -->|No| F{session_type = DYNAMIC?}
+
+F -->|Yes| G{@mention in last message?}
+G -->|Yes| H[Use mentioned agent]
+G -->|No| I[Score agents by expertise]
+
+I --> J[Pick best agent]
+J --> K[Fallback: round robin]
+
+F -->|No| K
+
+K --> L[agent.generate_response()]
+
+L --> M{response == PASS?}
+
+M -->|Yes| N[Skip turn return skipped true]
+M -->|No| O[Append to history with timestamp]
+
+O --> P[Return turn_data]
 ```
 
 ## Custom Model Integrations (Bring Your Own Code)
