@@ -80,11 +80,15 @@ class Agent:
             if self.config.max_tokens:
                 litellm_params["max_tokens"] = self.config.max_tokens
                 
+            litellm_params["timeout"] = self.config.timeout
             litellm_params.update(params)
 
             response = litellm.completion(**litellm_params)
             return response.choices[0].message.content.strip()
             
+        except litellm.Timeout as e:
+            logger.error(f"Timeout logic executed for agent '{self.name}' on model '{self.model}': {e}")
+            return f"[Timeout Error: The model '{self.model}' took too long to respond ({self.config.timeout}s)]"
         except Exception as e:
             logger.error(f"Error getting response from agent '{self.name}' on model '{self.model}': {e}")
             return f"[Error: Could not generate response. Details: {str(e)}]"

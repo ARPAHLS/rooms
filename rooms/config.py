@@ -19,6 +19,7 @@ class AgentConfig(BaseModel):
     model: str = Field(default="ollama/llama3", description="LiteLLM compatible model name or placeholder for custom")
     temperature: float = Field(default=0.7, description="Generation temperature")
     max_tokens: Optional[int] = Field(default=None, description="Max generated tokens")
+    timeout: int = Field(default=30, description="Timeout in seconds for model generation")
     color: str = Field(default="blue", description="CLI output color for this agent")
     custom_function_path: Optional[str] = Field(default=None, description="Path to .py file if model_type is custom_function")
     custom_function_name: Optional[str] = Field(default=None, description="Name of the python function to call")
