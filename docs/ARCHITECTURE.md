@@ -53,29 +53,28 @@ Beyond the configured turn interval, the `needs_human_input()` method performs a
 flowchart TD
 
 A[generate_next_turn()] --> B{Orchestrator due?}
-B -->|Yes| C[Speak or PASS → skip]
-B -->|No| D{_forced_next_agent set?}
+B -->|Yes| C[Speak or PASS]
+C -->|Speak| EndOrch[Append to history & return turn]
+C -->|PASS| D
 
-D -->|Yes| E[Use forced agent and clear flag]
+B -->|No| D{_forced_next_agent set?}
+D -->|Yes| E[Use forced agent & clear flag] --> L
 D -->|No| F{session_type = DYNAMIC?}
 
+F -->|No| K[Fallback: round robin / argumentative] --> L
 F -->|Yes| G{@mention in last message?}
-G -->|Yes| H[Use mentioned agent]
+
+G -->|Yes| H[Use mentioned agent] --> L
 G -->|No| I[Score agents by expertise]
 
-I --> J[Pick best agent]
-J --> K[Fallback: round robin]
+I --> J{Top score > 0?}
+J -->|Yes| Best[Pick best matching agent] --> L
+J -->|No| K
 
-F -->|No| K
+L[agent.generate_response()] --> M{response == PASS?}
 
-K --> L[agent.generate_response()]
-
-L --> M{response == PASS?}
-
-M -->|Yes| N[Skip turn return skipped true]
-M -->|No| O[Append to history with timestamp]
-
-O --> P[Return turn_data]
+M -->|Yes| N[Skip turn, return skipped: True]
+M -->|No| O[Append to history with timestamp] --> P[Return turn_data]
 ```
 
 ## Custom Model Integrations (Bring Your Own Code)
