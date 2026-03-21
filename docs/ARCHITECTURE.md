@@ -76,19 +76,3 @@ L["agent.generate_response()"] --> M{"response == PASS?"}
 M -->|Yes| N["Skip turn, return skipped: True"]
 M -->|No| O["Append to history with timestamp"] --> P["Return turn_data"]
 
-## Custom Model Integrations (Bring Your Own Code)
-
-If you do not want to use LiteLLM at all, the framework allows you to inject arbitrary Python scripts as the "brain" for an agent.
-
-1. Create a python file (e.g. `my_model.py`).
-2. Write a function that accepts a `List[Dict[str, str]]` (the conversation history) and returns a `str` (the agent's reply).
-3. In the CLI wizard, select `custom_function` as the Model Type.
-4. Provide the path to `my_model.py` and the exact name of the function you wrote.
-
-The framework will dynamically import your file at runtime and use it exclusively for that agent's turns.
-
-## CI/CD and Robustness
-To ensure the framework remains stable as it grows, we maintain a comprehensive CI/CD pipeline using **GitHub Actions**. Every contribution is automatically tested against Python 3.13 for:
-- **Linting**: High-standard code hygiene via `flake8`.
-- **Logic Robustness**: Detailed edge-case testing including word-boundary expertise matching and non-repeating HITL triggers.
-- **Regression Testing**: Ensuring core orchestration types (Round Robin, Dynamic, Argumentative) remain deterministic.
