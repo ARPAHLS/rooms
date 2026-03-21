@@ -9,6 +9,7 @@ The Multi-Agent Rooms framework is extremely versatile. This guide covers practi
 | Parameter | What it controls | Tips |
 |---|---|---|
 | `temperature` | Creativity vs. determinism | `0.3–0.5` for lawyers/analysts; `0.8–1.0` for visionaries/writers |
+| `timeout` | Max wait time for inference | `30` (default); increase significantly for slower local models |
 | `max_turns` | Total session length | 10–15 for focused debates; 20–30 for think tanks |
 | `human_in_the_loop_turns` | How often you steer | 0 for fully autonomous; 3–5 for guided; 1 for full collab |
 | `session_type` | Agent interaction style | See the table below |

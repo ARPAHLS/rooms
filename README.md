@@ -42,7 +42,7 @@ The framework allows extreme granularity in handling session configurations:
 
 | Capability | Scope | Notes |
 | :--- | :--- | :--- |
-| **Generative Control** | **Per-Agent** | Set `temperature`, `max_tokens`, and system prompts individually. |
+| **Generative Control** | **Per-Agent** | Set `temperature`, `max_tokens`, `timeout`, and system prompts individually. |
 | **Logic Hooks** | **Runtime** | Dynamically load native `.py` files to act as agents. |
 | **Data Preservation** | **Ephemeral** | RAM-only by default. Prompted to export as Markdown or CSV on exit. |
 | **Session Memory** | **Full History** | Timestamped history shared across all participants throughout the session. |
