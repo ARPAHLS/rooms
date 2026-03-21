@@ -16,7 +16,7 @@ def _score_agent_expertise(agent: Agent, context_text: str) -> int:
     context_lower = context_text.lower()
     score = 0
     for kw in agent.config.expertise:
-        if re.search(rf"\b{re.escape(kw)}\b", context_lower, re.IGNORECASE):
+        if re.search(rf"\b{re.escape(kw.lower())}\b", context_lower):
             score += 1
     return score
 
