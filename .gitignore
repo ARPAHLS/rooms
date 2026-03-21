@@ -21,3 +21,5 @@ Thumbs.db
 # Project Outputs
 outputs/*
 !outputs/.gitkeep
+
+.history/
