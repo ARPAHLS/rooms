@@ -3,6 +3,7 @@ import logging
 import importlib.util
 import sys
 import os
+import concurrent.futures
 from typing import Optional, List, Dict, Any
 from .config import AgentConfig, ModelType
 
@@ -44,8 +45,13 @@ class Agent:
             inference_func = getattr(module, func_name)
             
             # We enforce standard (messages: List[Dict]) -> str signature for custom functions
-            response = inference_func(messages)
-            return str(response).strip()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(inference_func, messages)
+                try:
+                    response = future.result(timeout=self.config.timeout)
+                    return str(response).strip()
+                except concurrent.futures.TimeoutError:
+                    return f"[Timeout Error: The custom function '{func_name}' took too long to respond ({self.config.timeout}s)]"
             
         except AttributeError:
              return f"[Error: Function '{func_name}' not found in {file_path}]"

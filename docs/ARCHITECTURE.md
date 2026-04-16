@@ -86,7 +86,7 @@ If you do not want to use LiteLLM at all, the framework allows you to inject any
 3. In the CLI wizard, select `custom_function` as the Model Type.
 4. Provide the path to `my_model.py` and the exact name of the function you wrote.
 
-The framework will dynamically import your file at runtime and use it exclusively for that agent's turns.
+The framework will dynamically import your file at runtime and use it exclusively for that agent's turns. Note that custom functions are executed with a timeout boundary (using the agent's configured `timeout` setting) to prevent infinite UI hangups.
 
 ## CI/CD and Robustness
 To ensure the framework remains stable as it grows, we maintain a comprehensive CI/CD pipeline using **GitHub Actions**. Every contribution is automatically tested against Python 3.13 for:
