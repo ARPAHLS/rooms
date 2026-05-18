@@ -1,5 +1,7 @@
 import os
 import sys
+from typing import List, Optional
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
@@ -50,7 +52,31 @@ DEFAULT_AGENTS = [
     )
 ]
 
-def create_custom_agent_wizard() -> AgentConfig:
+
+def _set_session_env_key(tracked_keys: List[str], key_name: str, value: str) -> None:
+    """Set a wizard-provided secret and track it for cleanup. Skips if the key already exists."""
+    if not key_name or key_name in os.environ:
+        return
+    os.environ[key_name] = value
+    tracked_keys.append(key_name)
+
+
+def _prompt_api_key_if_needed(tracked_keys: List[str], key_prompt: str = "Enter the environment variable name (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY)") -> None:
+    """Prompt for an API key env var when the model needs one; track keys set during this session."""
+    if not Confirm.ask("Does this model require an API Key?"):
+        return
+    key_name = Prompt.ask(key_prompt)
+    if key_name and key_name not in os.environ:
+        _set_session_env_key(tracked_keys, key_name, Prompt.ask(f"Enter your {key_name}", password=True))
+
+
+def _cleanup_session_env(tracked_keys: List[str]) -> None:
+    """Remove environment variables that were added by the wizard for this session."""
+    for key in tracked_keys:
+        os.environ.pop(key, None)
+
+
+def create_custom_agent_wizard(tracked_env_keys: Optional[List[str]] = None) -> AgentConfig:
     """Guided wizard to create a brand new agent."""
     console.print(Panel("[bold yellow]Create Custom Agent[/bold yellow]"))
     name = Prompt.ask("Agent Name")
@@ -78,11 +104,8 @@ def create_custom_agent_wizard() -> AgentConfig:
         config.model = model_str
         
         if not model_str.startswith("ollama/"):
-            if Confirm.ask("Does this model require an API Key?"):
-                key_name = Prompt.ask("Enter the environment variable name (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY)")
-                if key_name and key_name not in os.environ:
-                    os.environ[key_name] = Prompt.ask(f"Enter your {key_name}", password=True)
-                    
+            _prompt_api_key_if_needed(tracked_env_keys or [])
+
     config.color = Prompt.ask("CLI output color (e.g. red, green, blue, cyan, magenta, yellow)", default="blue")
     config.temperature = float(Prompt.ask("Generation Temperature", default="0.7"))
     return config
@@ -96,6 +119,7 @@ def main_menu():
     user_name = Prompt.ask("Your name (or alias)", default="User")
     user_background = Prompt.ask("Brief background or role (e.g. 'CTO with 15 years in cloud infrastructure')", default="")
     user_profile = {"name": user_name, "background": user_background}
+    tracked_env_keys: List[str] = []
 
     # 1. Session Basics
     console.print("\n[bold cyan]--- 1. Session Setup ---[/bold cyan]")
@@ -130,7 +154,7 @@ def main_menu():
 
     while True:
         if Confirm.ask("Would you like to build and invite a Custom Agent?", default=False):
-            custom_agent = create_custom_agent_wizard()
+            custom_agent = create_custom_agent_wizard(tracked_env_keys)
             active_agent_configs.append(custom_agent)
         else:
             break
@@ -150,10 +174,10 @@ def main_menu():
         model = Prompt.ask("Orchestrator Model", default="ollama/llama3")
         
         if not model.startswith("ollama/"):
-            if Confirm.ask("Does this orchestrator model require an API Key?"):
-                key_name = Prompt.ask("Enter the environment variable name (e.g. OPENAI_API_KEY)")
-                if key_name and key_name not in os.environ:
-                    os.environ[key_name] = Prompt.ask(f"Enter your {key_name}", password=True)
+            _prompt_api_key_if_needed(
+                tracked_env_keys,
+                key_prompt="Enter the environment variable name (e.g. OPENAI_API_KEY)",
+            )
 
         orchestrator_config = AgentConfig(
              name="System Moderator",
@@ -176,13 +200,19 @@ def main_menu():
     )
 
     console.print("\n[bold yellow]Starting Room Session...[/bold yellow]")
-    run_session(session_config, agents, user_profile)
+    run_session(session_config, agents, user_profile, tracked_env_keys)
 
-def run_session(config: SessionConfig, agents: list[Agent], user_profile: dict = None):
+def run_session(
+    config: SessionConfig,
+    agents: list[Agent],
+    user_profile: dict = None,
+    tracked_env_keys: Optional[List[str]] = None,
+):
     session = Session(config, agents, user_profile=user_profile)
-    
+    env_keys = tracked_env_keys if tracked_env_keys is not None else []
+
     console.print(Panel(session.global_intro, title="System Introduction", border_style="bold grey53"))
-    
+
     try:
         while session.turn_count < config.max_turns:
             # Human in the loop logic (interval OR early trigger if user is addressed)
@@ -217,7 +247,9 @@ def run_session(config: SessionConfig, agents: list[Agent], user_profile: dict =
             
     except KeyboardInterrupt:
         console.print("\n[yellow]Session interrupted via keyboard.[/yellow]")
-    
+    finally:
+        _cleanup_session_env(env_keys)
+
     console.print("\n[bold green]Session ended.[/bold green]")
     prompt_save(session)
 
