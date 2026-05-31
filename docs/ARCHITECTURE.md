@@ -14,6 +14,17 @@ Because the request never leaves your computer, **there are no API keys required
 
 When the Agents reply to you in the terminal, it means your computer's local CPU/GPU is quietly processing the inference via the Ollama application running in your background!
 
+## User settings (optional)
+
+Default model strings, timeouts, user profile, and optional persona overrides are loaded from YAML at CLI startup (`rooms/settings.py`). **No file is required** — if `rooms.settings.yaml` is missing, built-in defaults apply (same values as `rooms.settings.example.yaml`).
+
+| File | Committed? | Role |
+|------|------------|------|
+| `rooms.settings.example.yaml` | Yes | Template and documentation of all supported keys |
+| `rooms.settings.yaml` | No (gitignored) | Per-machine overrides; create via `python cli.py config init` or manual copy |
+
+Search order: `--config path` → `./rooms.settings.yaml` → user config dir (`~/.config/rooms/settings.yaml` or `%APPDATA%\rooms\settings.yaml` on Windows).
+
 ## Session Memory & Timestamps
 All conversation history is held in RAM for the duration of the session. Each entry — agent turn, user message, and system introduction — is tagged with a `timestamp` (format: `YYYY-MM-DD HH:MM:SS`). This makes transcripts auditable without any external database.
 

@@ -1,0 +1,35 @@
+# Copy to rooms.settings.yaml (gitignored) or run: python cli.py config init
+# See: https://github.com/ARPAHLS/rooms/issues/26 and #27
+
+defaults:
+  litellm_model: "ollama/gemma4:e2b"
+  orchestrator_model: "ollama/gemma4:e2b"
+  temperature: 0.7
+  timeout: 30
+
+presets:
+  local-ollama:
+    litellm_model: "ollama/gemma4:e2b"
+  openai:
+    litellm_model: "gpt-4o"
+    api_key_env: "OPENAI_API_KEY"
+
+ollama:
+  auto_select_first: false
+  base_url: "http://localhost:11434"
+
+user:
+  name: "User"
+  background: ""
+
+# true = use built-in Elena / Viktor / Nyx personas (prompts from repo)
+use_shipped_personas: true
+
+# Optional: override personas entirely (set use_shipped_personas: false)
+# personas:
+#   - name: "Elena (The Lawyer)"
+#     system_prompt: "..."
+#     expertise: ["law", "contracts"]
+#     model: null
+#     temperature: null
+#     color: "magenta"

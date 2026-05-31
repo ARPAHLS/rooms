@@ -16,7 +16,7 @@ class AgentConfig(BaseModel):
     system_prompt: str = Field(..., description="System prompt defining the role")
     expertise: List[str] = Field(default_factory=list, description="Keywords defining expertise areas")
     model_type: ModelType = Field(default=ModelType.LITELLM, description="Whether to use LiteLLM routing or a custom python script")
-    model: str = Field(default="ollama/llama3", description="LiteLLM compatible model name or placeholder for custom")
+    model: str = Field(default="ollama/gemma4:e2b", description="LiteLLM compatible model name or placeholder for custom")
     temperature: float = Field(default=0.7, description="Generation temperature")
     max_tokens: Optional[int] = Field(default=None, description="Max generated tokens")
     timeout: int = Field(default=30, description="Timeout in seconds for model generation")

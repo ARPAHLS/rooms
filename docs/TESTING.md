@@ -23,7 +23,22 @@ PYTHONPATH=. python -m pytest tests/ -v
 
 > **Note**: Running `python tests/test_session.py` directly will fail with a `ModuleNotFoundError`. Always use `pytest`.
 
-## Current Test Coverage (12 tests)
+## Settings / CLI smoke (no Ollama)
+
+Fast checks for [#26](https://github.com/ARPAHLS/rooms/issues/26) / [#27](https://github.com/ARPAHLS/rooms/issues/27) — no interactive wizard, no live inference:
+
+```bash
+# Windows (PowerShell)
+$env:PYTHONPATH="."; python -m pytest tests/test_settings.py tests/test_cli_settings_smoke.py tests/test_cli.py -q
+```
+
+| Test file | What it verifies |
+|---|---|
+| `tests/test_settings.py` | YAML load/validation, personas, builtin defaults; asserts `rooms.settings.example.yaml` exists in repo |
+| `tests/test_cli_settings_smoke.py` | `cli.py config init`, `config reset`, `--config` wiring |
+| `tests/test_cli.py` | Wizard API-key env cleanup (#5) |
+
+## Session logic coverage
 
 | Test | What It Verifies |
 |---|---|
@@ -39,6 +54,8 @@ PYTHONPATH=. python -m pytest tests/ -v
 | `test_early_hitl_when_user_addressed` | `needs_human_input()` triggers immediately when user is named |
 | `test_expertise_word_boundaries` | Strict keyword matching using word boundaries (e.g., `law` vs `flaw`) |
 | `test_hitl_trigger_only_once_per_message` | Ensures HITL pause doesn't trigger repeatedly for the same event |
+
+Run the full suite with `python -m pytest tests/ -v` (see **Running Tests** above).
 
 ## How to Write Custom Tests
 

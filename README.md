@@ -68,13 +68,17 @@ Rooms/
 │   ├── config.py       # Pydantic Configuration Models
 │   ├── agent.py        # Agent & LiteLLM/Custom Logic
 │   ├── session.py      # Turn Orchestration & Memory
+│   ├── settings.py     # YAML settings loader (#26, #27)
 │   └── storage.py      # Secure Log Serialization
 ├── tests/              # Unit Tests
 │   └── test_session.py # Logic Verification
 ├── outputs/            # Session Transcripts
-├── cli.py              # Interactive Wizard Entry Point
-└── requirements.txt    # Project Dependencies
+├── cli.py                      # Interactive Wizard Entry Point
+├── rooms.settings.example.yaml # Settings template (commit this)
+├── requirements.txt            # Project Dependencies
 ```
+
+`rooms.settings.yaml` is gitignored — create it locally with `python cli.py config init` or by copying the example file.
 
 ## Quick Start
 
@@ -93,7 +97,24 @@ venv\Scripts\activate  # Windows: venv\Scripts\activate | Unix: source venv/bin/
 pip install -r requirements.txt
 ```
 
-### 2. Usage
+### 2. Configure defaults (optional)
+
+You do **not** need a settings file to run the CLI — built-in defaults apply (see `rooms.settings.example.yaml` for the shape). To customize per machine, create a local file (gitignored):
+
+| File | In git? | Purpose |
+|------|---------|---------|
+| `rooms.settings.example.yaml` | Yes (template) | Committed reference; copy or use `config init` |
+| `rooms.settings.yaml` | No (gitignored) | Your local overrides (model tag, user name, personas) |
+
+```bash
+python cli.py config init    # copies example → rooms.settings.yaml in cwd
+# Or manually: copy rooms.settings.example.yaml to rooms.settings.yaml
+# Edit rooms.settings.yaml — e.g. defaults.litellm_model from `ollama list`
+python cli.py config reset   # remove user file; revert to shipped defaults
+python cli.py --config path/to/settings.yaml
+```
+
+### 3. Usage
 
 **Start the Interactive Wizard**
 ```bash
