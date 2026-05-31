@@ -57,6 +57,12 @@ def test_shipped_personas_use_defaults_model():
     assert personas[0].name == "Elena (The Lawyer)"
 
 
+def test_empty_personas_respects_disabled_shipped_personas():
+    settings = RoomsSettings(use_shipped_personas=False)
+    personas = get_default_personas(settings)
+    assert personas == []
+
+
 def test_custom_personas_from_yaml():
     settings = RoomsSettings(
         use_shipped_personas=False,
