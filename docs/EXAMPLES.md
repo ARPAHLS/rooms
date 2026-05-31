@@ -204,6 +204,62 @@ The quality of your agents is entirely determined by the quality of their system
 **Deep Persona (recommended):**
 > *"You are Isabella, a CMO who survived the 2008 financial crash by pivoting your entire brand to digital overnight. You are cynical about influencer marketing and believe that measurable ROI is the only truth. You've been burned before by vague creative briefs. Your memory of '08 makes you extremely risk-averse. You speak in bullet points and always end your turn by asking for a specific metric."*
 
+
+
+---
+
+## Global Defaults vs Per-Agent Overrides
+
+Rooms uses a two-layer configuration system. Understanding it prevents confusion when agents don't behave as expected.
+
+### Layer 1: `rooms.settings.yaml` (Global Defaults)
+
+The optional `rooms.settings.yaml` file (gitignored) sets defaults for all agents and the orchestrator. Copy from `rooms.settings.example.yaml` or run:
+
+```bash
+python cli.py config init
+```
+
+**Global defaults:**
+
+| Key | Default | Applies to |
+|-----|---------|------------|
+| `defaults.litellm_model` | `ollama/gemma4:e2b` | All agents (unless overridden per-agent) |
+| `defaults.orchestrator_model` | `ollama/gemma4:e2b` | The orchestrator (dynamic mode routing) |
+| `defaults.temperature` | `0.7` | All agents (unless overridden per-agent) |
+| `defaults.timeout` | `30` | All inference calls |
+
+### Layer 2: Per-Agent Overrides (In-Session)
+
+When you define agents in a session (via wizard or YAML), per-agent fields override globals:
+
+```yaml
+agents:
+  - name: "Elena"
+    system_prompt: "You are a corporate lawyer..."
+    temperature: 0.3        # overrides defaults.temperature
+    model: "gpt-4o"         # overrides defaults.litellm_model
+```
+
+**Override rules:**
+
+| Per-agent field | Overrides | Fallback |
+|-----------------|-----------|----------|
+| `model` | `defaults.litellm_model` | Global default |
+| `temperature` | `defaults.temperature` | Global default |
+| `timeout` | `defaults.timeout` | Global default |
+
+The orchestrator always uses `defaults.orchestrator_model` — it is never overridden by per-agent settings.
+
+### When to Use What
+
+- **Global defaults**: Set once for your environment (local Ollama vs OpenAI vs cloud API). You rarely change these.
+- **Per-agent overrides**: Use when a specific agent needs different behavior (e.g., a lawyer at `temperature: 0.3` and a visionary at `temperature: 1.0`).
+
+### Common Mistake
+
+Editing `rooms.settings.yaml` but not seeing changes? The file is gitignored and loaded at startup. Restart the session after editing.
+
 ---
 
 ## Common Edge Cases & How to Handle Them
