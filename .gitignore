@@ -3,6 +3,9 @@ venv/
 env/
 .env
 
+# User-local settings (copy from rooms.settings.example.yaml or: python cli.py config init)
+rooms.settings.yaml
+
 # Cache
 __pycache__/
 *.py[cod]

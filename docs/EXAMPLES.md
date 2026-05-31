@@ -15,6 +15,7 @@ The Multi-Agent Rooms framework is extremely versatile. This guide covers practi
 | `session_type` | Agent interaction style | See the table below |
 | `expertise` | Keywords for smart routing | Be specific — improves `dynamic` mode selection accuracy |
 | `system_prompt` | Agent identity and role | The more vivid and specific, the more coherent the agent |
+| `rooms.settings.yaml` | Local defaults (optional) | Copy from `rooms.settings.example.yaml` or run `python cli.py config init`; set `defaults.litellm_model` to your Ollama tag |
 
 **Session Type Guide:**
 
