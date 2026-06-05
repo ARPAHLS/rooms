@@ -73,9 +73,10 @@ Rooms/
 ├── tests/              # Unit Tests
 │   └── test_session.py # Logic Verification
 ├── outputs/            # Session Transcripts
-├── cli.py                      # Interactive Wizard Entry Point
+├── cli.py                      # Interactive Wizard Entry Point      
 ├── rooms.settings.example.yaml # Settings template (commit this)
-├── requirements.txt            # Project Dependencies
+├── requirements.txt            # Core Project Dependencies
+└── requirements-memory.txt     # Optional Vector Memory Dependencies    # Project Dependencies
 ```
 
 `rooms.settings.yaml` is gitignored — create it locally with `python cli.py config init` or by copying the example file.
@@ -93,9 +94,14 @@ cd Rooms
 python -m venv venv
 venv\Scripts\activate  # Windows: venv\Scripts\activate | Unix: source venv/bin/activate
 
-# Install Dependencies
+# Install Core Dependencies
 pip install -r requirements.txt
 ```
+#### Optional: Long-Term Memory & RAG Support
+If you plan to use vector memory features (such as long-term agent memory across sessions), you will need to install the heavier machine learning dependencies separately:
+
+```bash
+pip install -r requirements-memory.txt
 
 ### 2. Configure defaults (optional)
 
