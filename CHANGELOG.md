@@ -1,11 +1,18 @@
-# Changelog
+\# Changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
-## [Unreleased]
 
-### Added
-- Created initial CHANGELOG.md structure following the Keep a Changelog standard.
+
+> \*\*Note:\*\* This project is currently in a pre-release stage. Official versioned release entries will begin tracking here soon.
+
+
+
+\## \[Unreleased]
+
+\### Added
+
+\- Created initial CHANGELOG.md structure following the Keep a Changelog standard.
+

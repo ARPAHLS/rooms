@@ -27,7 +27,7 @@ Use the Feature Request template. Explain the motivation behind the suggestion a
    ```
 4. **Add Tests**: If you are adding new logic, please include corresponding tests in `tests/test_session.py`.
 5. **Submit PR**: Provide a clear description of what the PR changes and why.
-
+6. **Update Changelog**: Please note that a project changelog exists at `CHANGELOG.md`. Contributors will be requested to update the `[Unreleased]` section of the changelog once official versioned releases begin.
 ---
 
 ## Design Philosophy
