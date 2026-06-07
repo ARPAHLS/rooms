@@ -101,6 +101,7 @@ pip install -r requirements.txt
 If you plan to use vector memory features (such as long-term agent memory across sessions (#13)), you will need to install the heavier machine learning dependencies separately:
 ```bash
 pip install -r requirements-memory.txt
+```
 
 ### 2. Configure defaults (optional)
 
