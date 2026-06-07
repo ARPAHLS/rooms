@@ -56,11 +56,13 @@ def test_cli_main_loads_explicit_config_without_wizard(tmp_path, monkeypatch):
         encoding="utf-8",
     )
 
-    with patch.object(cli, "main_menu") as mock_menu:
+    with patch.object(cli, "main_menu") as mock_menu, \
+         patch.object(cli, "check_ollama_preflight", return_value=True) as mock_preflight:
         rc = cli.main(["--config", str(cfg)])
 
     assert rc == 0
     mock_menu.assert_called_once()
+    mock_preflight.assert_called_once()
     settings = mock_menu.call_args[0][0]
     assert settings.defaults.litellm_model == "ollama/smoke:1b"
     assert settings.defaults.timeout == 99
