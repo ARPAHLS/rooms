@@ -219,3 +219,14 @@ The quality of your agents is entirely determined by the quality of their system
 | Agent addresses you directly | Session auto-triggers HITL early | This is by design — respond or type `continue` |
 | Agent has nothing to add | Returns `PASS` | Turn is silently skipped; visible in logs only |
 | Topic is very broad | Agents go off-scope | Add Orchestrator with *"steer back to [topic] if agents drift"* |
+
+---
+
+## Advanced CLI Reference
+
+### Skipping Preflight Checks
+If you are running the application in a CI/CD automation environment, running automated test configurations, or simply wish to bypass the local Ollama connectivity and model verification sequence, append the `--skip-preflight` flag alongside your execution statement:
+
+```bash
+python cli.py --skip-preflight
+```
