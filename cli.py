@@ -306,6 +306,14 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def check_ollama_preflight(settings) -> bool:
+    """
+    Runs an optional preflight check for Ollama reachability and model availability
+    if the default configured model relies on a local Ollama instance.
+    """
+    from rooms import ollama_preflight
+    return ollama_preflight.run_ollama_preflight(settings)
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -329,6 +337,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         found = find_settings_file()
         if found:
             console.print(f"[dim]Using settings: {found}[/dim]")
+
+    # Run the Ollama preflight check. If it fails, exit cleanly without starting the wizard.
+    if not check_ollama_preflight(settings):
+        return 1
 
     main_menu(settings)
     return 0
