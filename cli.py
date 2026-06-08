@@ -303,6 +303,12 @@ def build_parser() -> argparse.ArgumentParser:
     reset_p.add_argument("--path", help="Specific settings file to remove")
     reset_p.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
 
+    parser.add_argument(
+        "--skip-preflight",
+        action="store_true",
+        help="Skip Ollama preflight connectivity and model validation checks"
+    )
+
     return parser
 
 
@@ -338,9 +344,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         if found:
             console.print(f"[dim]Using settings: {found}[/dim]")
 
-    # Run the Ollama preflight check. If it fails, exit cleanly without starting the wizard.
-    if not check_ollama_preflight(settings):
-        return 1
+    # Run the Ollama preflight check unless --skip-preflight is passed.
+    if not args.skip_preflight:
+        if not check_ollama_preflight(settings):
+            return 1
 
     main_menu(settings)
     return 0
