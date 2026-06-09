@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import os
 import shutil
+import json
+
 from pathlib import Path
 from typing import Dict, List, Optional
+from urllib.request import urlopen
+from urllib.error import URLError
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -134,6 +138,30 @@ def _apply_ollama_env(settings: RoomsSettings) -> None:
     if settings.ollama.base_url:
         os.environ.setdefault("OLLAMA_API_BASE", settings.ollama.base_url)
 
+def resolve_ollama_model(settings: RoomsSettings) -> str:
+    model = settings.defaults.litellm_model
+
+    if not settings.ollama.auto_select_first:
+        return model
+
+    if model != "ollama/auto":
+        return model
+
+    try:
+        url = f"{settings.ollama.base_url}/api/tags"
+
+        with urlopen(url, timeout=3) as response:
+            data = json.loads(response.read().decode("utf-8"))
+
+        models = data.get("models", [])
+
+        if models:
+            return f"ollama/{models[0]['name']}"
+
+    except (URLError, KeyError, IndexError, json.JSONDecodeError):
+        pass
+
+    return model
 
 def load_settings(explicit_path: Optional[str] = None, *, required: bool = False) -> RoomsSettings:
     """Load settings from the first matching file, or return built-in defaults."""

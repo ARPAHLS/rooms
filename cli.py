@@ -21,8 +21,10 @@ from rooms.settings import (
     init_settings_file,
     reset_settings_file,
     find_settings_file,
+    resolve_ollama_model,
     EXAMPLE_SETTINGS_FILENAME,
     USER_SETTINGS_FILENAME,
+
 )
 
 console = Console()
@@ -79,7 +81,7 @@ def create_custom_agent_wizard(settings: RoomsSettings, tracked_env_keys: Option
         config.custom_function_name = Prompt.ask("Enter the exact function name to call (e.g. process_inference)")
     else:
         config.model_type = ModelType.LITELLM
-        default_model = defaults.litellm_model
+        default_model = resolve_ollama_model(settings)
         console.print(
             "[dim]Hint: For local Ollama use your tag from `ollama list` (e.g. "
             f"'{default_model}'). For OpenAI use 'gpt-4o'.[/dim]"
