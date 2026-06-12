@@ -2,6 +2,7 @@
 # See: https://github.com/ARPAHLS/rooms/issues/26 and #27
 
 defaults:
+  # Set to "ollama/auto" to automatically pick the first model returned by your local engine
   litellm_model: "ollama/gemma4:e2b"
   orchestrator_model: "ollama/gemma4:e2b"
   temperature: 0.7
@@ -15,6 +16,7 @@ presets:
     api_key_env: "OPENAI_API_KEY"
 
 ollama:
+  # When litellm_model is set to "ollama/auto", true selects the first active model from `ollama list`
   auto_select_first: false
   base_url: "http://localhost:11434"
 
@@ -32,4 +34,4 @@ use_shipped_personas: true
 #     expertise: ["law", "contracts"]
 #     model: null
 #     temperature: null
-#     color: "magenta"
+# #     color: "magenta"
