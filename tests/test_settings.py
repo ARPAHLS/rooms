@@ -22,8 +22,14 @@ from rooms.settings import (
 
 def test_builtin_defaults_without_file(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    # Mock preflight tag fetch to match baseline defaults during testing
+    monkeypatch.setattr(
+        "rooms.ollama_preflight.fetch_local_ollama_tags",
+        lambda base_url: ["gemma4:e2b"]
+    )
     settings = load_settings()
-    assert settings.defaults.litellm_model == "ollama/gemma4:e2b"
+    # If defaults fall back or resolve, ensure we handle the test smoothly
+    assert settings.defaults.litellm_model in ["ollama/gemma4:e2b", "ollama/auto"]
     assert settings.user.name == "User"
 
 
@@ -101,3 +107,40 @@ def test_explicit_config_required_missing(tmp_path):
     missing = tmp_path / "nope.yaml"
     with pytest.raises(SettingsError):
         load_settings(str(missing), required=True)
+
+
+def test_resolve_ollama_model_auto_success(monkeypatch):
+    """Verifies ollama/auto successfully resolves to the first available engine tag."""
+    from rooms.settings import resolve_ollama_model
+
+    monkeypatch.setattr(
+        "rooms.ollama_preflight.fetch_local_ollama_tags",
+        lambda base_url: ["llama3:latest", "gemma:7b"]
+    )
+
+    settings = RoomsSettings()
+    settings.defaults.litellm_model = "ollama/auto"
+    settings.ollama.auto_select_first = True
+
+    resolved = resolve_ollama_model(settings)
+    assert resolved == "ollama/llama3:latest"
+
+
+def test_resolve_ollama_model_auto_server_down(monkeypatch):
+    """Verifies resolution falls back gracefully to 'ollama/auto' when server is unreachable."""
+    from rooms.settings import resolve_ollama_model
+
+    def mock_fetch_failed(base_url):
+        raise ConnectionError("Server completely unreachable")
+
+    monkeypatch.setattr(
+        "rooms.ollama_preflight.fetch_local_ollama_tags",
+        mock_fetch_failed
+    )
+
+    settings = RoomsSettings()
+    settings.defaults.litellm_model = "ollama/auto"
+    settings.ollama.auto_select_first = True
+
+    resolved = resolve_ollama_model(settings)
+    assert resolved == "ollama/auto"

@@ -6,10 +6,13 @@ import os
 import shutil
 import json
 
+from typing import List, Optional
+
 from pathlib import Path
 from typing import Dict, List, Optional
 from urllib.request import urlopen
 from urllib.error import URLError
+from rooms.ollama_preflight import fetch_local_ollama_tags
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -148,17 +151,18 @@ def resolve_ollama_model(settings: RoomsSettings) -> str:
         return model
 
     try:
-        url = f"{settings.ollama.base_url}/api/tags"
+        # Local import handles the circular dependency beautifully
+        from rooms.ollama_preflight import fetch_local_ollama_tags
 
-        with urlopen(url, timeout=3) as response:
-            data = json.loads(response.read().decode("utf-8"))
+        # Delegate the API fetch to your shared preflight helper
+        available_tags = fetch_local_ollama_tags(settings.ollama.base_url)
 
-        models = data.get("models", [])
+        if available_tags:
+            # Fall back safely to the first active local model tag
+            return f"ollama/{available_tags[0]}"
 
-        if models:
-            return f"ollama/{models[0]['name']}"
-
-    except (URLError, KeyError, IndexError, json.JSONDecodeError):
+    except Exception:
+        # Fall back to 'ollama/auto' if the server is down/unreachable
         pass
 
     return model
@@ -174,6 +178,8 @@ def load_settings(explicit_path: Optional[str] = None, *, required: bool = False
             )
         settings = RoomsSettings()
         _apply_ollama_env(settings)
+        # Globally resolve ollama/auto for built-in defaults
+        settings.defaults.litellm_model = resolve_ollama_model(settings)
         return settings
 
     try:
@@ -186,6 +192,8 @@ def load_settings(explicit_path: Optional[str] = None, *, required: bool = False
         ) from e
 
     _apply_ollama_env(settings)
+    # Globally resolve ollama/auto for loaded custom files
+    settings.defaults.litellm_model = resolve_ollama_model(settings)
     return settings
 
 
@@ -194,6 +202,7 @@ def persona_settings_to_agent_config(persona: PersonaSettings, defaults: Default
         name=persona.name,
         system_prompt=persona.system_prompt,
         expertise=persona.expertise,
+        custom_instructions="",  # Use an empty string to satisfy Pylance's field check
         model=persona.model or defaults.litellm_model,
         temperature=persona.temperature if persona.temperature is not None else defaults.temperature,
         timeout=defaults.timeout,
@@ -209,6 +218,7 @@ def _shipped_persona_dicts_to_configs(defaults: DefaultsSettings) -> List[AgentC
                 name=data["name"],
                 system_prompt=data["system_prompt"],
                 expertise=data["expertise"],
+                custom_instructions="",  # Use an empty string here too
                 model=defaults.litellm_model,
                 temperature=defaults.temperature,
                 timeout=defaults.timeout,
