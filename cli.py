@@ -14,6 +14,7 @@ from rooms.agent import Agent
 from rooms.session import Session
 from rooms.storage import save_transcript
 from rooms.skills_cli import list_skills, inspect_skill, suggest_skills
+from rooms.env import bootstrap_environment
 from rooms.settings import (
     RoomsSettings,
     SettingsError,
@@ -436,6 +437,7 @@ def check_ollama_preflight(settings) -> bool:
     return ollama_preflight.run_ollama_preflight(settings)
 
 def main(argv: Optional[List[str]] = None) -> int:
+    bootstrap_environment()
     parser = build_parser()
     args = parser.parse_args(argv)
 

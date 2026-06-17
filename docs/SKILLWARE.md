@@ -9,13 +9,15 @@ Rooms supports optional Skillware-based tool use for agents.
 - Agent replies remain human-readable even when tools are used.
 - Skill execution metadata is logged as structured session events.
 
-## Install (Optional)
+## Install
+
+Skillware is included in `requirements.txt` and installed with the core package:
 
 ```bash
-pip install skillware
+pip install -r requirements.txt
 ```
 
-Rooms works normally without Skillware. Skill commands and wizard steps fail gracefully with guidance.
+Skill manifests are still loaded lazily only when an agent has configured skills.
 
 ## Skills CLI Commands
 

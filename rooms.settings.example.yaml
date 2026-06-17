@@ -1,5 +1,5 @@
 # Copy to rooms.settings.yaml (gitignored) or run: python cli.py config init
-# See: https://github.com/ARPAHLS/rooms/issues/26 and #27
+# API keys belong in .env (see .env.example), not in this file.
 
 defaults:
   litellm_model: "ollama/gemma4:e2b"
