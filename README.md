@@ -35,6 +35,7 @@
 - **User Profile & Identity**: Name and background provided at session start; agents treat the user as an equal room participant.
 - **Global Orchestrator**: A designated room moderator that fires every N turns to summarize or redirect agents, with no runaway loop risk.
 - **Timestamped Session Memory**: All turns, messages, and system events are tagged with precise timestamps for full auditability.
+- **Optional Skillware Integration**: Assign skills per agent, execute tools lazily, and keep user-facing replies natural.
 
 ## Framework Capabilities
 
@@ -54,9 +55,10 @@ The framework allows extreme granularity in handling session configurations:
 
 For deeper insights into how to leverage and modify the framework, please refer to our dedicated documentation guides:
 
-- [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand how local API routing, session memory, and agent selection work.
+- [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand local API routing, session memory, orchestration, and tool logging.
 - [Use Cases, Examples & Best Practices](docs/EXAMPLES.md) - Parameter cheat sheet, deep persona guide, scenario walkthroughs, and an edge case reference table.
-- [Testing Strategy](docs/TESTING.md) - How to write and run deterministic tests for multi-agent logic.
+- [Skillware Integration Guide](docs/SKILLWARE.md) - Skills CLI commands, wizard assignment flow, and optional dependency behavior.
+- [Testing Strategy](docs/TESTING.md) - How to write and run deterministic tests for multi-agent and skills logic.
 - [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute to the project, report bugs, and follow our design philosophy.
 - [Project Changelog](CHANGELOG.md) - Track all notable updates, fixes, and pre-release changes to the framework.
 
@@ -69,7 +71,7 @@ Rooms/
 │   ├── config.py       # Pydantic Configuration Models
 │   ├── agent.py        # Agent & LiteLLM/Custom Logic
 │   ├── session.py      # Turn Orchestration & Memory
-│   ├── settings.py     # YAML settings loader (#26, #27)
+│   ├── settings.py     # YAML settings loader
 │   └── storage.py      # Secure Log Serialization
 ├── tests/              # Unit Tests
 │   └── test_session.py # Logic Verification
@@ -99,7 +101,7 @@ venv\Scripts\activate  # Windows: venv\Scripts\activate | Unix: source venv/bin/
 pip install -r requirements.txt
 ```
 #### Optional: Long-Term Memory & RAG Support
-If you plan to use vector memory features (such as long-term agent memory across sessions (#13)), you will need to install the heavier machine learning dependencies separately:
+If you plan to use vector memory features, install the heavier machine learning dependencies separately:
 ```bash
 pip install -r requirements-memory.txt
 ```
@@ -131,9 +133,12 @@ The wizard will step you through:
 - Setting your user profile (name and background)
 - Defining the session topic and turn limits
 - Inviting default or custom agents with individual temperatures and system prompts
+- Optionally assigning Skillware skills (and per-skill overrides) to custom agents
 - Optionally assigning a Global Orchestrator
 
 During a session, type `@AgentName` in any user input to force a specific agent to respond next.
+
+For skills-specific commands and usage, see `docs/SKILLWARE.md`.
 
 **Run Tests**
 ```bash
@@ -144,10 +149,6 @@ $env:PYTHONPATH="."; python -m pytest tests/ -v
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Roadmap & Progress
-
-Track our active progress on the [GitHub Issues](https://github.com/arpahls/Rooms/issues) board.
 
 <br>
 <div align="center">
