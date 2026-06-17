@@ -13,6 +13,7 @@ from rooms.config import SessionConfig, AgentConfig, SessionType, ModelType
 from rooms.agent import Agent
 from rooms.session import Session
 from rooms.storage import save_transcript
+from rooms.skills_cli import list_skills, inspect_skill, suggest_skills
 from rooms.settings import (
     RoomsSettings,
     SettingsError,
@@ -92,7 +93,50 @@ def create_custom_agent_wizard(settings: RoomsSettings, tracked_env_keys: Option
 
     config.color = Prompt.ask("CLI output color (e.g. red, green, blue, cyan, magenta, yellow)", default="blue")
     config.temperature = float(Prompt.ask("Generation Temperature", default=str(defaults.temperature)))
+    _assign_skills_in_wizard(config)
     return config
+
+
+def _assign_skills_in_wizard(config: AgentConfig) -> None:
+    """Optional skill assignment step for custom agents."""
+    if not Confirm.ask("Assign Skillware skills to this agent?", default=False):
+        return
+
+    skills, err = list_skills()
+    if err:
+        console.print(f"[yellow]{err}[/yellow]")
+        if not Confirm.ask("Continue with manual skill IDs anyway?", default=False):
+            return
+
+    if skills:
+        console.print("\n[bold green]Available Skills[/bold green]")
+        for item in skills:
+            desc = item.get("description", "").strip()
+            suffix = f" - {desc}" if desc else ""
+            console.print(f"- {item['id']}{suffix}")
+
+    raw = Prompt.ask(
+        "Skill IDs to assign (comma separated, leave blank to skip)",
+        default="",
+    ).strip()
+    if not raw:
+        return
+    config.skills = [item.strip() for item in raw.split(",") if item.strip()]
+
+    for skill_id in config.skills:
+        if Confirm.ask(f"Add runtime config overrides for {skill_id}?", default=False):
+            cfg_raw = Prompt.ask(
+                f"Enter {skill_id} overrides as key=value pairs (comma separated)",
+                default="",
+            ).strip()
+            overrides = {}
+            if cfg_raw:
+                for pair in [p.strip() for p in cfg_raw.split(",") if p.strip()]:
+                    if "=" in pair:
+                        key, value = pair.split("=", 1)
+                        overrides[key.strip()] = value.strip()
+            if overrides:
+                config.skill_settings[skill_id] = overrides
 
 
 def main_menu(settings: RoomsSettings):
@@ -286,6 +330,65 @@ def cmd_config_reset(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_skills_list(_args: argparse.Namespace) -> int:
+    skills, err = list_skills()
+    if err:
+        console.print(f"[yellow]{err}[/yellow]")
+        return 0
+    if not skills:
+        console.print("[yellow]No skills discovered.[/yellow]")
+        return 0
+
+    console.print("[bold green]Available Skills[/bold green]")
+    for item in skills:
+        desc = item.get("description", "").strip()
+        suffix = f" - {desc}" if desc else ""
+        console.print(f"- {item['id']}{suffix}")
+    return 0
+
+
+def cmd_skills_inspect(args: argparse.Namespace) -> int:
+    payload, err = inspect_skill(args.skill_id)
+    if err:
+        console.print(f"[yellow]{err}[/yellow]")
+        return 1
+
+    console.print(Panel.fit(f"[bold]{payload['id']}[/bold]", title="Skill"))
+    if payload.get("version"):
+        console.print(f"[cyan]Version:[/cyan] {payload['version']}")
+    if payload.get("description"):
+        console.print(f"[cyan]Description:[/cyan] {payload['description']}")
+    if payload.get("inputs"):
+        console.print(f"[cyan]Inputs:[/cyan] {payload['inputs']}")
+    if payload.get("instructions"):
+        console.print(Rule("Skill Instructions"))
+        console.print(payload["instructions"])
+    return 0
+
+
+def cmd_skills_suggest(args: argparse.Namespace) -> int:
+    expertise = [item.strip() for item in args.expertise.split(",") if item.strip()]
+    if not expertise:
+        console.print("[yellow]No expertise keywords provided.[/yellow]")
+        return 1
+    skills, err = list_skills()
+    if err:
+        console.print(f"[yellow]{err}[/yellow]")
+        return 0
+
+    suggested = suggest_skills(skills, expertise)
+    if not suggested:
+        console.print("[yellow]No suggested skills matched your expertise keywords.[/yellow]")
+        return 0
+
+    console.print("[bold green]Suggested Skills[/bold green]")
+    for item in suggested:
+        desc = item.get("description", "").strip()
+        suffix = f" - {desc}" if desc else ""
+        console.print(f"- {item['id']}{suffix}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Multi-Agent Room Framework")
     parser.add_argument(
@@ -302,6 +405,18 @@ def build_parser() -> argparse.ArgumentParser:
     reset_p = config_sub.add_parser("reset", help="Remove user settings file")
     reset_p.add_argument("--path", help="Specific settings file to remove")
     reset_p.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
+
+    skills_parser = sub.add_parser("skills", help="Rooms-native Skillware discovery and inspection")
+    skills_sub = skills_parser.add_subparsers(dest="skills_cmd", required=True)
+    skills_sub.add_parser("list", help="List available skills")
+    inspect_p = skills_sub.add_parser("inspect", help="Inspect a specific skill")
+    inspect_p.add_argument("skill_id", help="Skill ID, e.g. finance/wallet_screening")
+    suggest_p = skills_sub.add_parser("suggest", help="Suggest skills from expertise keywords")
+    suggest_p.add_argument(
+        "--expertise",
+        required=True,
+        help="Comma-separated keywords, e.g. finance,risk,compliance",
+    )
 
     parser.add_argument(
         "--skip-preflight",
@@ -329,6 +444,14 @@ def main(argv: Optional[List[str]] = None) -> int:
             return cmd_config_init(args)
         if args.config_cmd == "reset":
             return cmd_config_reset(args)
+        return 1
+    if args.command == "skills":
+        if args.skills_cmd == "list":
+            return cmd_skills_list(args)
+        if args.skills_cmd == "inspect":
+            return cmd_skills_inspect(args)
+        if args.skills_cmd == "suggest":
+            return cmd_skills_suggest(args)
         return 1
 
     try:

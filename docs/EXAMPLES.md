@@ -230,3 +230,15 @@ If you are running the application in a CI/CD automation environment, running au
 ```bash
 python cli.py --skip-preflight
 ```
+
+### Skills in Real Sessions
+
+You can assign optional skills to custom agents during wizard setup.
+
+Recommended flow:
+
+- start with one focused skill per agent
+- keep expertise keywords aligned with expected tool usage
+- use per-skill overrides only when needed
+
+For complete command reference and setup, see `docs/SKILLWARE.md`.

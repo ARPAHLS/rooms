@@ -25,7 +25,7 @@ PYTHONPATH=. python -m pytest tests/ -v
 
 ## Settings / CLI smoke (no Ollama)
 
-Fast checks for [#26](https://github.com/ARPAHLS/rooms/issues/26) / [#27](https://github.com/ARPAHLS/rooms/issues/27) — no interactive wizard, no live inference:
+Fast checks for settings and CLI behavior with no interactive wizard and no live inference:
 
 ```bash
 # Windows (PowerShell)
@@ -36,7 +36,8 @@ $env:PYTHONPATH="."; python -m pytest tests/test_settings.py tests/test_cli_sett
 |---|---|
 | `tests/test_settings.py` | YAML load/validation, personas, builtin defaults; asserts `rooms.settings.example.yaml` exists in repo |
 | `tests/test_cli_settings_smoke.py` | `cli.py config init`, `config reset`, `--config` wiring |
-| `tests/test_cli.py` | Wizard API-key env cleanup (#5) |
+| `tests/test_cli.py` | Wizard env cleanup, Skills CLI command behavior, wizard skill assignment flow |
+| `tests/test_skills_cli.py` | Skillware wrapper discovery/inspect normalization and suggestion matching |
 
 ## Session logic coverage
 
@@ -56,6 +57,15 @@ $env:PYTHONPATH="."; python -m pytest tests/test_settings.py tests/test_cli_sett
 | `test_hitl_trigger_only_once_per_message` | Ensures HITL pause doesn't trigger repeatedly for the same event |
 
 Run the full suite with `python -m pytest tests/ -v` (see **Running Tests** above).
+
+## Skillware UX coverage
+
+Rooms includes tests for native Skillware UX:
+
+- `skills list` command output path (and graceful no-Skillware path)
+- `skills inspect <skill_id>` rendering
+- `skills suggest --expertise ...` keyword matching behavior
+- custom-agent wizard optional skill assignment and per-skill overrides
 
 ## How to Write Custom Tests
 

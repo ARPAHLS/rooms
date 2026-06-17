@@ -38,6 +38,8 @@ At the end of a session, the user is prompted to optionally save. Two formats ar
 
 The filename is auto-suggested from a short slug of the session topic (e.g. `bioethics_of_designer_babies.md`). System bootstrap messages are excluded from saved output.
 
+For skill-enabled agents, transcript exports also include structured skill execution events (`role: skill`) with tool name, arguments, status, and result payload for auditability.
+
 ## User Profile & Participant Identity
 The wizard captures a **user name and background** before the session starts. This is injected into the global session introduction, so all agents are explicitly informed of who the human participant is and can treat them as an equal voice in the room.
 
@@ -98,6 +100,19 @@ If you do not want to use LiteLLM at all, the framework allows you to inject any
 4. Provide the path to `my_model.py` and the exact name of the function you wrote.
 
 The framework will dynamically import your file at runtime and use it exclusively for that agent's turns. Note that custom functions are executed with a timeout boundary (using the agent's configured `timeout` setting) to prevent infinite UI hangups.
+
+## Skillware Integration
+
+Rooms includes optional Skillware support through native CLI and wizard flows.
+
+The integration is designed to:
+
+- preserve Rooms terminal UX and styling
+- fail gracefully when Skillware is unavailable
+- keep skill loading lazy and per-agent
+- keep user-facing answers natural while logging structured tool events
+
+For command usage and setup, see `docs/SKILLWARE.md`.
 
 ## CI/CD and Robustness
 To ensure the framework remains stable as it grows, we maintain a comprehensive CI/CD pipeline using **GitHub Actions**. Every contribution is automatically tested against Python 3.13 for:
