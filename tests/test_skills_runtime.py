@@ -1,6 +1,7 @@
 import types
 
 from rooms.agent import Agent
+import rooms.agent as agent_module
 from rooms.config import AgentConfig
 from rooms.skills_runtime import SkillRuntime
 
@@ -130,7 +131,7 @@ def test_agent_executes_tool_and_returns_synthesized_reply(monkeypatch):
             )
         return _Response(_Message("Readable final answer"))
 
-    monkeypatch.setattr("rooms.agent.litellm.completion", _fake_completion)
+    monkeypatch.setattr(agent_module.litellm, "completion", _fake_completion)
     agent = Agent(
         AgentConfig(
             name="A",
@@ -244,7 +245,7 @@ def test_wallet_screening_skill_flow_returns_natural_language(monkeypatch):
             )
         )
 
-    monkeypatch.setattr("rooms.agent.litellm.completion", _fake_completion)
+    monkeypatch.setattr(agent_module.litellm, "completion", _fake_completion)
 
     agent = Agent(
         AgentConfig(
