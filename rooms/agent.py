@@ -4,8 +4,10 @@ import importlib.util
 import sys
 import os
 import concurrent.futures
+import json
 from typing import Optional, List, Dict, Any
 from .config import AgentConfig, ModelType
+from .skills_runtime import SkillRuntime, build_tool_messages
 
 # Optional: Disable extreme litellm verbosity for normal usage
 litellm.suppress_debug_info = True
@@ -22,6 +24,7 @@ class Agent:
         self.model_type = config.model_type
         self.system_prompt = config.system_prompt
         self.expertise = config.expertise
+        self._skill_runtime = SkillRuntime(config)
         
     def _execute_custom_function(self, messages: List[Dict[str, str]]) -> str:
         """Dynamically loads and invokes a custom python function for inference."""
@@ -69,6 +72,14 @@ class Agent:
         full_system_prompt = self.config.system_prompt
         if self.config.custom_instructions:
             full_system_prompt += f"\n\nADDITIONAL INSTRUCTIONS FOR THIS SESSION:\n{self.config.custom_instructions}"
+        if self._skill_runtime.has_skills:
+            skill_instructions = self._skill_runtime.get_combined_instructions()
+            if skill_instructions:
+                full_system_prompt += (
+                    "\n\nAVAILABLE TOOLS:\n"
+                    "You may call tools when needed and then summarize outputs clearly for the user.\n\n"
+                    f"{skill_instructions}"
+                )
             
         messages = [{"role": "system", "content": full_system_prompt}]
         messages.extend(context_messages)
@@ -88,9 +99,59 @@ class Agent:
                 
             litellm_params["timeout"] = self.config.timeout
             litellm_params.update(params)
+            tools = self._skill_runtime.get_tools()
+            if self._skill_runtime.has_skills and self._skill_runtime.load_error:
+                return f"[Error: {self._skill_runtime.load_error}]"
+            if tools:
+                litellm_params["tools"] = tools
+                litellm_params["tool_choice"] = "auto"
 
             response = litellm.completion(**litellm_params)
-            return response.choices[0].message.content.strip()
+            first_message = response.choices[0].message
+            tool_calls = list(getattr(first_message, "tool_calls", []) or [])
+
+            if tools and tool_calls:
+                if len(tool_calls) > self.config.max_skill_calls_per_turn:
+                    return (
+                        "[Error: Model requested too many tool calls in one turn "
+                        f"({len(tool_calls)} > {self.config.max_skill_calls_per_turn})]"
+                    )
+
+                tool_call_payload: List[Dict[str, Any]] = []
+                tool_results: List[Dict[str, Any]] = []
+                for tc in tool_calls:
+                    func = getattr(tc, "function", None)
+                    tool_name = getattr(func, "name", "")
+                    raw_args = getattr(func, "arguments", "") or "{}"
+                    try:
+                        parsed_args = json.loads(raw_args) if isinstance(raw_args, str) else dict(raw_args)
+                    except Exception:  # noqa: BLE001
+                        parsed_args = {}
+                    execution = self._skill_runtime.execute_tool(tool_name, parsed_args, self.config.timeout)
+
+                    tc_id = getattr(tc, "id", f"call_{len(tool_call_payload)}")
+                    tool_call_payload.append(
+                        {
+                            "id": tc_id,
+                            "type": "function",
+                            "function": {"name": tool_name, "arguments": json.dumps(parsed_args, ensure_ascii=True)},
+                        }
+                    )
+                    tool_results.append(
+                        {
+                            "tool_call_id": tc_id,
+                            "tool_name": tool_name,
+                            "payload": execution,
+                        }
+                    )
+
+                messages.extend(build_tool_messages(tool_call_payload, tool_results))
+                second_params = dict(litellm_params)
+                second_params["messages"] = messages
+                second_response = litellm.completion(**second_params)
+                return (second_response.choices[0].message.content or "").strip()
+
+            return (first_message.content or "").strip()
             
         except litellm.Timeout as e:
             logger.error(f"Timeout logic executed for agent '{self.name}' on model '{self.model}': {e}")

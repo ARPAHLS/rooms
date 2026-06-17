@@ -33,3 +33,7 @@ use_shipped_personas: true
 #     model: null
 #     temperature: null
 #     color: "magenta"
+#     skills: ["compliance/tos_evaluator"]
+#     skill_settings:
+#       compliance/tos_evaluator:
+#         mode: "strict"
