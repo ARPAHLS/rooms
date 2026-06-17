@@ -55,7 +55,7 @@ class Session:
         self.config = config
         self.agents = agents
         self.user_profile = user_profile  # {"name": "...", "background": "..."}
-        self.history: List[Dict[str, str]] = []
+        self.history: List[Dict[str, Any]] = []
         self.turn_count = 0
         self._last_orchestrator_turn = -1
         self._forced_next_agent: Optional[Agent] = None  # Locked next agent from @mention or user direction
@@ -91,6 +91,9 @@ class Session:
         """Format history into an LLM context including system prompt."""
         context = []
         for msg in self.history:
+            if msg.get("role") == "skill":
+                # Keep tool logs in session history/transcripts, but out of model context.
+                continue
             role = "user"
             if msg["role"] == current_agent.name:
                 role = "assistant"
@@ -103,6 +106,27 @@ class Session:
 
             context.append({"role": role, "content": content})
         return context
+
+    def _append_skill_events(self, agent: Agent, skill_events: List[Dict[str, Any]]) -> None:
+        """Store structured skill execution events in session history."""
+        for event in skill_events:
+            result = event.get("result", {})
+            tool_name = event.get("tool_name", "unknown_tool")
+            status = "ok" if event.get("ok") else "error"
+            content = f"{agent.name} used {tool_name} ({status})"
+            self.history.append(
+                {
+                    "role": "skill",
+                    "agent": agent.name,
+                    "event_type": event.get("event_type", "skill_execution"),
+                    "tool_name": tool_name,
+                    "arguments": event.get("arguments", {}),
+                    "result": result,
+                    "status": status,
+                    "content": content,
+                    "timestamp": _now(),
+                }
+            )
 
     def generate_next_turn(self) -> Optional[Dict[str, str]]:
         """Determine next agent, get response, and log it."""
@@ -141,6 +165,9 @@ class Session:
 
         context = self.get_agent_context(agent)
         response_text = agent.generate_response(context)
+        skill_events = agent.consume_last_skill_events() if hasattr(agent, "consume_last_skill_events") else []
+        if skill_events:
+            self._append_skill_events(agent, skill_events)
 
         # Handle PASS: agent has nothing to add — silently skip turn
         if response_text.strip().upper() == "PASS":
@@ -171,7 +198,8 @@ class Session:
 
         elif self.config.session_type == SessionType.DYNAMIC:
             # Build context text from recent history for scoring
-            recent = " ".join(m["content"] for m in self.history[-5:])
+            recent_messages = [m for m in self.history if m.get("role") != "skill"]
+            recent = " ".join(m.get("content", "") for m in recent_messages[-5:])
 
             # 1. Check for @mention or name reference in last user/agent message
             if self.history:

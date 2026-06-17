@@ -1,6 +1,7 @@
 import csv
+import json
 import os
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 def slugify_topic(topic: str, max_words: int = 5) -> str:
@@ -12,7 +13,7 @@ def slugify_topic(topic: str, max_words: int = 5) -> str:
     return slug or "session"
 
 
-def save_transcript(history: List[Dict[str, str]], filepath: str, format: str = "markdown"):
+def save_transcript(history: List[Dict[str, Any]], filepath: str, format: str = "markdown"):
     """
     Save the conversation history to filepath.
     Format: 'markdown' or 'csv'.
@@ -28,10 +29,22 @@ def save_transcript(history: List[Dict[str, str]], filepath: str, format: str = 
             writer = csv.writer(f)
             writer.writerow(["Timestamp", "Speaker", "Message"])
             for msg in public_history:
+                if msg.get("role") == "skill":
+                    payload = {
+                        "event_type": msg.get("event_type", "skill_execution"),
+                        "agent": msg.get("agent", ""),
+                        "tool_name": msg.get("tool_name", ""),
+                        "status": msg.get("status", ""),
+                        "arguments": msg.get("arguments", {}),
+                        "result": msg.get("result", {}),
+                    }
+                    message = json.dumps(payload, ensure_ascii=True, separators=(",", ":"))
+                else:
+                    message = msg.get("content", "").replace("\n", " ")
                 writer.writerow([
                     msg.get("timestamp", ""),
                     msg.get("role", ""),
-                    msg.get("content", "").replace("\n", " ")
+                    message
                 ])
     else:
         # Markdown
@@ -42,4 +55,13 @@ def save_transcript(history: List[Dict[str, str]], filepath: str, format: str = 
                 content = msg.get("content", "")
                 ts = msg.get("timestamp", "")
                 ts_str = f" _{ts}_" if ts else ""
+                if role == "skill":
+                    content = (
+                        f"- agent: {msg.get('agent', '')}\n"
+                        f"- tool: {msg.get('tool_name', '')}\n"
+                        f"- status: {msg.get('status', '')}\n"
+                        f"- arguments: `{json.dumps(msg.get('arguments', {}), ensure_ascii=True)}`\n"
+                        f"- result: `{json.dumps(msg.get('result', {}), ensure_ascii=True)}`"
+                    )
+                    role = "skill event"
                 f.write(f"### {role.strip().capitalize()}{ts_str}\n\n{content}\n\n---\n\n")

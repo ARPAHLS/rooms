@@ -25,6 +25,7 @@ class Agent:
         self.system_prompt = config.system_prompt
         self.expertise = config.expertise
         self._skill_runtime = SkillRuntime(config)
+        self._last_skill_events: List[Dict[str, Any]] = []
         
     def _execute_custom_function(self, messages: List[Dict[str, str]]) -> str:
         """Dynamically loads and invokes a custom python function for inference."""
@@ -62,11 +63,20 @@ class Agent:
             logger.error(f"Error executing custom function '{func_name}' in {file_path}: {e}")
             return f"[Error: Custom function failed. Details: {str(e)}]"
 
-    def generate_response(self, context_messages: List[Dict[str, str]], override_params: Optional[Dict[str, Any]] = None) -> str:
+    def consume_last_skill_events(self) -> List[Dict[str, Any]]:
+        """Return and clear structured skill events for the last generation call."""
+        events = list(self._last_skill_events)
+        self._last_skill_events = []
+        return events
+
+    def generate_response_with_events(
+        self, context_messages: List[Dict[str, str]], override_params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
-        Generate a response using LiteLLM or a custom function.
+        Generate a response and structured skill execution events.
         """
         params = override_params or {}
+        self._last_skill_events = []
         
         # Build the system message for this agent
         full_system_prompt = self.config.system_prompt
@@ -85,7 +95,8 @@ class Agent:
         messages.extend(context_messages)
         
         if self.model_type == ModelType.CUSTOM_FUNCTION:
-            return self._execute_custom_function(messages)
+            content = self._execute_custom_function(messages)
+            return {"content": content, "skill_events": []}
             
         try:
             # LiteLLM handling
@@ -101,7 +112,7 @@ class Agent:
             litellm_params.update(params)
             tools = self._skill_runtime.get_tools()
             if self._skill_runtime.has_skills and self._skill_runtime.load_error:
-                return f"[Error: {self._skill_runtime.load_error}]"
+                return {"content": f"[Error: {self._skill_runtime.load_error}]", "skill_events": []}
             if tools:
                 litellm_params["tools"] = tools
                 litellm_params["tool_choice"] = "auto"
@@ -112,13 +123,17 @@ class Agent:
 
             if tools and tool_calls:
                 if len(tool_calls) > self.config.max_skill_calls_per_turn:
-                    return (
-                        "[Error: Model requested too many tool calls in one turn "
-                        f"({len(tool_calls)} > {self.config.max_skill_calls_per_turn})]"
-                    )
+                    return {
+                        "content": (
+                            "[Error: Model requested too many tool calls in one turn "
+                            f"({len(tool_calls)} > {self.config.max_skill_calls_per_turn})]"
+                        ),
+                        "skill_events": [],
+                    }
 
                 tool_call_payload: List[Dict[str, Any]] = []
                 tool_results: List[Dict[str, Any]] = []
+                skill_events: List[Dict[str, Any]] = []
                 for tc in tool_calls:
                     func = getattr(tc, "function", None)
                     tool_name = getattr(func, "name", "")
@@ -128,6 +143,15 @@ class Agent:
                     except Exception:  # noqa: BLE001
                         parsed_args = {}
                     execution = self._skill_runtime.execute_tool(tool_name, parsed_args, self.config.timeout)
+                    skill_events.append(
+                        {
+                            "event_type": "skill_execution",
+                            "tool_name": tool_name,
+                            "arguments": parsed_args,
+                            "result": execution,
+                            "ok": bool(execution.get("ok")),
+                        }
+                    )
 
                     tc_id = getattr(tc, "id", f"call_{len(tool_call_payload)}")
                     tool_call_payload.append(
@@ -149,16 +173,28 @@ class Agent:
                 second_params = dict(litellm_params)
                 second_params["messages"] = messages
                 second_response = litellm.completion(**second_params)
-                return (second_response.choices[0].message.content or "").strip()
+                content = (second_response.choices[0].message.content or "").strip()
+                self._last_skill_events = skill_events
+                return {"content": content, "skill_events": skill_events}
 
-            return (first_message.content or "").strip()
+            return {"content": (first_message.content or "").strip(), "skill_events": []}
             
         except litellm.Timeout as e:
             logger.error(f"Timeout logic executed for agent '{self.name}' on model '{self.model}': {e}")
-            return f"[Timeout Error: The model '{self.model}' took too long to respond ({self.config.timeout}s)]"
+            return {
+                "content": f"[Timeout Error: The model '{self.model}' took too long to respond ({self.config.timeout}s)]",
+                "skill_events": [],
+            }
         except Exception as e:
             logger.error(f"Error getting response from agent '{self.name}' on model '{self.model}': {e}")
-            return f"[Error: Could not generate response. Details: {str(e)}]"
+            return {"content": f"[Error: Could not generate response. Details: {str(e)}]", "skill_events": []}
+
+    def generate_response(self, context_messages: List[Dict[str, str]], override_params: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Backward-compatible wrapper that returns only human-readable content.
+        """
+        result = self.generate_response_with_events(context_messages, override_params=override_params)
+        return str(result.get("content", "")).strip()
 
     def __repr__(self):
         return f"<Agent name={self.name} model={self.model}>"
