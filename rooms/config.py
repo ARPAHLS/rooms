@@ -1,5 +1,5 @@
 import enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 class SessionType(str, enum.Enum):
@@ -24,6 +24,11 @@ class AgentConfig(BaseModel):
     custom_function_path: Optional[str] = Field(default=None, description="Path to .py file if model_type is custom_function")
     custom_function_name: Optional[str] = Field(default=None, description="Name of the python function to call")
     custom_instructions: Optional[str] = Field(None, description="Per session custom instructions from the user")
+    skills: List[str] = Field(default_factory=list, description="Optional Skillware skill IDs assigned to this agent")
+    skill_settings: Dict[str, Dict[str, Any]] = Field(default_factory=dict, description="Optional per-skill runtime config overrides")
+    max_skill_calls_per_turn: int = Field(default=3, ge=0, description="Maximum tool calls allowed within one agent turn")
+    max_skill_calls_per_session: int = Field(default=20, ge=0, description="Maximum tool calls allowed for this agent instance")
+    skill_timeout: Optional[int] = Field(default=None, ge=1, description="Optional timeout in seconds for skill execution")
 
 class SessionConfig(BaseModel):
     topic: str = Field(..., description="The main topic or problem for this session")

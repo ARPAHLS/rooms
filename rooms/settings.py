@@ -85,6 +85,8 @@ class PersonaSettings(BaseModel):
     model: Optional[str] = None
     temperature: Optional[float] = None
     color: str = "blue"
+    skills: List[str] = Field(default_factory=list)
+    skill_settings: Dict[str, Dict[str, object]] = Field(default_factory=dict)
 
 
 class RoomsSettings(BaseModel):
@@ -170,6 +172,8 @@ def persona_settings_to_agent_config(persona: PersonaSettings, defaults: Default
         temperature=persona.temperature if persona.temperature is not None else defaults.temperature,
         timeout=defaults.timeout,
         color=persona.color,
+        skills=persona.skills,
+        skill_settings=persona.skill_settings,
     )
 
 
