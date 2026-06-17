@@ -1,8 +1,11 @@
 import pytest
+import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock
 from rooms.config import SessionConfig, AgentConfig, SessionType
 from rooms.agent import Agent
 from rooms.session import Session, _score_agent_expertise
+from rooms.storage import save_transcript
 
 def test_round_robin_session():
     # Setup
@@ -318,3 +321,93 @@ def test_hitl_trigger_only_once_per_message():
     
     session.add_user_message("Theo", "Hello")
     assert session.needs_human_input() is False
+
+
+def test_session_logs_structured_skill_events_and_keeps_reply_human_readable():
+    config = SessionConfig(
+        topic="Skill Logging Test",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=1,
+    )
+    agent_a = Agent(config.agents[0])
+    agent_a.generate_response = MagicMock(return_value="Human-readable answer")
+    agent_a.consume_last_skill_events = MagicMock(
+        return_value=[
+            {
+                "event_type": "skill_execution",
+                "tool_name": "finance_wallet_screening",
+                "arguments": {"wallet": "0xabc"},
+                "result": {"ok": True, "data": {"flagged": True}},
+                "ok": True,
+            }
+        ]
+    )
+    session = Session(config, [agent_a])
+
+    turn = session.generate_next_turn()
+    assert turn["content"] == "Human-readable answer"
+
+    skill_logs = [m for m in session.history if m.get("role") == "skill"]
+    assert len(skill_logs) == 1
+    assert skill_logs[0]["tool_name"] == "finance_wallet_screening"
+    assert skill_logs[0]["status"] == "ok"
+
+
+def test_skill_events_are_excluded_from_agent_context():
+    config = SessionConfig(
+        topic="Skill Context Isolation",
+        agents=[AgentConfig(name="AgentA", system_prompt="sys")],
+        session_type=SessionType.ROUND_ROBIN,
+        max_turns=1,
+    )
+    agent_a = Agent(config.agents[0])
+    session = Session(config, [agent_a])
+    session.history.append(
+        {
+            "role": "skill",
+            "agent": "AgentA",
+            "event_type": "skill_execution",
+            "tool_name": "finance_wallet_screening",
+            "arguments": {"wallet": "0xabc"},
+            "result": {"ok": True},
+            "status": "ok",
+            "content": "AgentA used finance_wallet_screening (ok)",
+            "timestamp": "2026-06-17 12:00:00",
+        }
+    )
+
+    context = session.get_agent_context(agent_a)
+    assert all("finance_wallet_screening" not in msg["content"] for msg in context)
+
+
+def test_transcript_writer_persists_skill_events():
+    history = [
+        {"role": "system", "content": "bootstrap", "timestamp": "2026-06-17 12:00:00"},
+        {"role": "AgentA", "content": "Normal answer", "timestamp": "2026-06-17 12:00:01"},
+        {
+            "role": "skill",
+            "agent": "AgentA",
+            "event_type": "skill_execution",
+            "tool_name": "finance_wallet_screening",
+            "arguments": {"wallet": "0xabc"},
+            "result": {"ok": True, "data": {"flagged": True}},
+            "status": "ok",
+            "content": "AgentA used finance_wallet_screening (ok)",
+            "timestamp": "2026-06-17 12:00:02",
+        },
+    ]
+
+    with tempfile.TemporaryDirectory() as td:
+        md_path = Path(td) / "session.md"
+        csv_path = Path(td) / "session.csv"
+
+        save_transcript(history, str(md_path), format="markdown")
+        save_transcript(history, str(csv_path), format="csv")
+
+        md_text = md_path.read_text(encoding="utf-8")
+        csv_text = csv_path.read_text(encoding="utf-8")
+
+    assert "Skill event" in md_text
+    assert "finance_wallet_screening" in md_text
+    assert 'tool_name"":""finance_wallet_screening' in csv_text
