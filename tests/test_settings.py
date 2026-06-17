@@ -97,7 +97,8 @@ def test_example_settings_file_exists():
     assert (repo_root() / "rooms.settings.example.yaml").is_file()
 
 
-def test_explicit_config_required_missing(tmp_path):
+def test_explicit_config_required_missing(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     missing = tmp_path / "nope.yaml"
     with pytest.raises(SettingsError):
         load_settings(str(missing), required=True)

@@ -38,6 +38,7 @@ $env:PYTHONPATH="."; python -m pytest tests/test_settings.py tests/test_cli_sett
 | `tests/test_cli_settings_smoke.py` | `cli.py config init`, `config reset`, `--config` wiring |
 | `tests/test_cli.py` | Wizard env cleanup, Skills CLI command behavior, wizard skill assignment flow |
 | `tests/test_skills_cli.py` | Skillware wrapper discovery/inspect normalization and suggestion matching |
+| `tests/test_env.py` | `.env` bootstrap precedence and settings integration |
 
 ## Session logic coverage
 

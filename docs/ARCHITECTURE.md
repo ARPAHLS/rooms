@@ -25,6 +25,26 @@ Default model strings, timeouts, user profile, and optional persona overrides ar
 
 Search order: `--config path` → `./rooms.settings.yaml` → user config dir (`~/.config/rooms/settings.yaml` or `%APPDATA%\rooms\settings.yaml` on Windows).
 
+## Environment variables and `.env`
+
+Rooms separates **configuration** from **credentials**:
+
+| Source | Use for |
+|---|---|
+| `rooms.settings.yaml` | Models, personas, skills, timeouts, user defaults |
+| Process environment | Provider API keys (`DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, etc.) |
+| `.env` (optional) | Local dev convenience; loaded into process env at startup |
+
+LiteLLM routes inference requests and reads provider keys from `os.environ`. LiteLLM does **not** parse `.env` files itself. Rooms bootstraps environment via `rooms.env.bootstrap_environment()` when the CLI starts and when settings are loaded.
+
+Precedence:
+
+1. Existing shell/CI environment variables (highest)
+2. `.env` in current working directory
+3. `.env` in repository root
+
+Never store API keys in `rooms.settings.yaml`.
+
 ## Session Memory & Timestamps
 All conversation history is held in RAM for the duration of the session. Each entry — agent turn, user message, and system introduction — is tagged with a `timestamp` (format: `YYYY-MM-DD HH:MM:SS`). This makes transcripts auditable without any external database.
 

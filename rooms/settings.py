@@ -11,6 +11,7 @@ import yaml
 from pydantic import BaseModel, Field, ValidationError
 
 from .config import AgentConfig
+from .env import bootstrap_environment
 
 # Shipped persona definitions (single source for reset / use_shipped_personas)
 SHIPPED_PERSONAS: List[dict] = [
@@ -139,6 +140,7 @@ def _apply_ollama_env(settings: RoomsSettings) -> None:
 
 def load_settings(explicit_path: Optional[str] = None, *, required: bool = False) -> RoomsSettings:
     """Load settings from the first matching file, or return built-in defaults."""
+    bootstrap_environment()
     path = find_settings_file(explicit_path)
     if path is None:
         if required and explicit_path:

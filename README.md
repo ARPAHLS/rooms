@@ -114,6 +114,7 @@ You do **not** need a settings file to run the CLI — built-in defaults apply (
 |------|---------|---------|
 | `rooms.settings.example.yaml` | Yes (template) | Committed reference; copy or use `config init` |
 | `rooms.settings.yaml` | No (gitignored) | Your local overrides (model tag, user name, personas) |
+| `.env` | No (gitignored) | API keys and secrets for cloud LiteLLM providers |
 
 ```bash
 python cli.py config init    # copies example → rooms.settings.yaml in cwd
@@ -121,6 +122,15 @@ python cli.py config init    # copies example → rooms.settings.yaml in cwd
 # Edit rooms.settings.yaml — e.g. defaults.litellm_model from `ollama list`
 python cli.py config reset   # remove user file; revert to shipped defaults
 python cli.py --config path/to/settings.yaml
+```
+
+**API keys (cloud models only)**
+
+LiteLLM reads provider credentials from the process environment (not from YAML). For local development, copy `.env.example` to `.env` and set keys such as `DEEPSEEK_API_KEY` or `OPENAI_API_KEY`. Rooms loads `.env` automatically at startup (shell/CI env vars take precedence).
+
+```bash
+copy .env.example .env   # Windows
+# edit .env with your provider key(s)
 ```
 
 ### 3. Usage
