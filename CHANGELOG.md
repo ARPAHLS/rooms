@@ -10,4 +10,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Documentation hub at `docs/README.md` with introduction, settings reference, and cross-links to all guides.
+- `docs/introduction.md` — short onboarding and quick start.
+- `docs/SETTINGS.md` — consolidated YAML key reference, `.env` guidance, and Ollama preflight documentation.
 - Created initial CHANGELOG.md structure following the Keep a Changelog standard.
+
+### Changed
+
+- README documentation section now points to the docs hub; project structure tree updated to match the current package layout.

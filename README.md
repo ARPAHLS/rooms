@@ -53,33 +53,39 @@ The framework allows extreme granularity in handling session configurations:
 
 ## Documentation Library
 
-For deeper insights into how to leverage and modify the framework, please refer to our dedicated documentation guides:
+**[Documentation hub](docs/README.md)** — start here for the full index (introduction, settings, architecture, examples, skills, testing).
 
-- [Architecture & LiteLLM Guide](docs/ARCHITECTURE.md) - Understand local API routing, session memory, orchestration, and tool logging.
-- [Use Cases, Examples & Best Practices](docs/EXAMPLES.md) - Parameter cheat sheet, deep persona guide, scenario walkthroughs, and an edge case reference table.
-- [Skillware Integration Guide](docs/SKILLWARE.md) - Skills CLI commands, wizard assignment flow, and optional dependency behavior.
-- [Testing Strategy](docs/TESTING.md) - How to write and run deterministic tests for multi-agent and skills logic.
-- [Contributing Guide](CONTRIBUTING.md) - Learn how to contribute to the project, report bugs, and follow our design philosophy.
-- [Project Changelog](CHANGELOG.md) - Track all notable updates, fixes, and pre-release changes to the framework.
+| Guide | Description |
+|-------|-------------|
+| [Introduction](docs/introduction.md) | What Rooms is and a five-minute quick start |
+| [Settings & preflight](docs/SETTINGS.md) | YAML keys, `.env`, search paths, Ollama preflight |
+| [Architecture & LiteLLM](docs/ARCHITECTURE.md) | Session memory, orchestration, transcripts, custom models |
+| [Examples & best practices](docs/EXAMPLES.md) | Parameter cheat sheet, personas, scenarios, edge cases |
+| [Skillware integration](docs/SKILLWARE.md) | Skills CLI, wizard assignment, runtime behavior |
+| [Testing](docs/TESTING.md) | Pytest, mocking, CI smoke tests |
+| [Contributing](CONTRIBUTING.md) | Bugs, PRs, design philosophy |
+| [Changelog](CHANGELOG.md) | Notable updates |
 
 ## Project Structure
 
 ```bash
 Rooms/
-├── rooms/              # Core Package
-│   ├── __init__.py
-│   ├── config.py       # Pydantic Configuration Models
-│   ├── agent.py        # Agent & LiteLLM/Custom Logic
-│   ├── session.py      # Turn Orchestration & Memory
-│   ├── settings.py     # YAML settings loader
-│   └── storage.py      # Secure Log Serialization
-├── tests/              # Unit Tests
-│   └── test_session.py # Logic Verification
-├── outputs/            # Session Transcripts
-├── cli.py                      # Interactive Wizard Entry Point      
+├── rooms/                      # Core package
+│   ├── agent.py                # Agent inference (LiteLLM / custom functions)
+│   ├── config.py               # Pydantic session & agent models
+│   ├── env.py                  # Optional .env bootstrap
+│   ├── ollama_preflight.py     # Local Ollama connectivity check
+│   ├── session.py              # Turn orchestration & memory
+│   ├── settings.py             # YAML settings loader
+│   ├── skills_cli.py           # Rooms-native Skillware CLI helpers
+│   ├── skills_runtime.py       # Lazy skill load & tool execution
+│   └── storage.py              # Transcript export (Markdown / CSV)
+├── docs/                       # Documentation hub (see docs/README.md)
+├── tests/                      # Pytest suite
+├── cli.py                      # Interactive wizard entry point
 ├── rooms.settings.example.yaml # Settings template (commit this)
-├── requirements.txt            # Core Project Dependencies
-└── requirements-memory.txt     # Optional Vector Memory Dependencies
+├── requirements.txt            # Core dependencies (includes skillware)
+└── requirements-memory.txt     # Optional vector memory dependencies
 ```
 
 `rooms.settings.yaml` is gitignored — create it locally with `python cli.py config init` or by copying the example file.
@@ -108,13 +114,15 @@ pip install -r requirements-memory.txt
 
 ### 2. Configure defaults (optional)
 
-You do **not** need a settings file to run the CLI — built-in defaults apply (see `rooms.settings.example.yaml` for the shape). To customize per machine, create a local file (gitignored):
+You do **not** need a settings file to run the CLI — built-in defaults apply. For the full YAML key reference, search paths, and Ollama preflight, see **[docs/SETTINGS.md](docs/SETTINGS.md)**.
+
+To customize per machine, create a local file (gitignored):
 
 | File | In git? | Purpose |
 |------|---------|---------|
 | `rooms.settings.example.yaml` | Yes (template) | Committed reference; copy or use `config init` |
 | `rooms.settings.yaml` | No (gitignored) | Your local overrides (model tag, user name, personas) |
-| `.env` | No (gitignored) | API keys and secrets for cloud LiteLLM providers |
+| `.env` | No (gitignored) | API keys and skill secrets (see [SETTINGS.md](docs/SETTINGS.md)) |
 
 ```bash
 python cli.py config init    # copies example → rooms.settings.yaml in cwd
@@ -124,13 +132,14 @@ python cli.py config reset   # remove user file; revert to shipped defaults
 python cli.py --config path/to/settings.yaml
 ```
 
-**API keys (cloud models only)**
+**API keys and skill secrets**
 
-LiteLLM reads provider credentials from the process environment (not from YAML). For local development, copy `.env.example` to `.env` and set keys such as `DEEPSEEK_API_KEY` or `OPENAI_API_KEY`. Rooms loads `.env` automatically at startup (shell/CI env vars take precedence).
+LiteLLM and Skillware read credentials from the **process environment** (not from YAML). Rooms loads `.env` automatically at startup (shell/CI env vars take precedence). See [docs/SETTINGS.md](docs/SETTINGS.md) for details and skill variables such as `ETHERSCAN_API_KEY`.
 
 ```bash
 copy .env.example .env   # Windows
-# edit .env with your provider key(s)
+# cp .env.example .env   # macOS / Linux
+# edit .env with your provider and skill keys
 ```
 
 ### 3. Usage

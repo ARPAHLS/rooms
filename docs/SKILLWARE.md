@@ -1,5 +1,7 @@
 # Skillware Integration
 
+> **Navigation:** [Documentation hub](README.md) · [Settings & preflight](SETTINGS.md) (skill `env_vars` in `.env`)
+
 Rooms supports optional Skillware-based tool use for agents.
 
 ## Design Principles

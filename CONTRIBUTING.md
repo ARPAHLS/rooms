@@ -8,6 +8,8 @@
 
 Thank you for your interest in contributing to Rooms. We welcome contributions from the community to help make this framework even better for local-first multi-agent orchestration.
 
+**Documentation:** see the [docs hub](docs/README.md) for architecture, settings, examples, and testing guides.
+
 ---
 
 ## How to Contribute
