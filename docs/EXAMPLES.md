@@ -1,5 +1,7 @@
 # Use Cases, Examples & Best Practices
 
+> **Navigation:** [Documentation hub](README.md) · [Settings & preflight](SETTINGS.md) · [Introduction](introduction.md)
+
 The Multi-Agent Rooms framework is extremely versatile. This guide covers practical use cases, how to configure agents for best results, scenario tips, and common edge cases to be aware of.
 
 ---
@@ -225,6 +227,9 @@ The quality of your agents is entirely determined by the quality of their system
 ## Advanced CLI Reference
 
 ### Skipping Preflight Checks
+
+See [SETTINGS.md — Ollama preflight](SETTINGS.md#ollama-preflight) for when preflight runs and how to configure Ollama.
+
 If you are running the application in a CI/CD automation environment, running automated test configurations, or simply wish to bypass the local Ollama connectivity and model verification sequence, append the `--skip-preflight` flag alongside your execution statement:
 
 ```bash

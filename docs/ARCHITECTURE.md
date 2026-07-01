@@ -1,5 +1,7 @@
 # Multi-Agent Rooms Architecture
 
+> **Navigation:** [Documentation hub](README.md) · [Settings & preflight](SETTINGS.md) · [Introduction](introduction.md)
+
 ## How LiteLLM Works
 **LiteLLM is a universal routing library, not an AI model or an API endpoint itself.**
 
@@ -15,6 +17,8 @@ Because the request never leaves your computer, **there are no API keys required
 When the Agents reply to you in the terminal, it means your computer's local CPU/GPU is quietly processing the inference via the Ollama application running in your background!
 
 ## User settings (optional)
+
+> **Full reference:** YAML keys, search paths, `.env`, and preflight are documented in [SETTINGS.md](SETTINGS.md).
 
 Default model strings, timeouts, user profile, and optional persona overrides are loaded from YAML at CLI startup (`rooms/settings.py`). **No file is required** — if `rooms.settings.yaml` is missing, built-in defaults apply (same values as `rooms.settings.example.yaml`).
 

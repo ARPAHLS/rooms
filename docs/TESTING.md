@@ -1,5 +1,7 @@
 # Testing Strategy
 
+> **Navigation:** [Documentation hub](README.md) · [Settings & preflight](SETTINGS.md) (CLI smoke tests)
+
 The Multi-Agent Rooms framework places paramount importance on reliability and predictable logic flow, particularly concerning the orchestration of multiple AI agents and the preservation of human-in-the-loop interventions.
 
 ## Our Testing Approach
