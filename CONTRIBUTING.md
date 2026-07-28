@@ -1,62 +1,125 @@
-<div align="center">
-  <img src="assets/roomslogo.png" alt="Rooms Logo" width="200px" />
+# Contributing to Rooms
 
-  # Contributing to Rooms
-</div>
+Thank you for helping improve Rooms. This guide is the entry point for code, CLI, settings, documentation, and test contributions. Rooms is local-first: changes should preserve user privacy, predictable orchestration, and offline-friendly testing.
 
-<br/>
+## Navigation
 
-Thank you for your interest in contributing to Rooms. We welcome contributions from the community to help make this framework even better for local-first multi-agent orchestration.
+| Section | Purpose |
+| :--- | :--- |
+| [Ways to contribute](#ways-to-contribute) | Choose the right scope and verification path |
+| [Getting started](#getting-started) | Fork, sync, branch, and install |
+| [Universal expectations](#universal-expectations) | Follow project-wide contribution standards |
+| [Pull request process](#pull-request-process) | Prepare a reviewable PR |
+| [Related documents](#related-documents) | Find architecture, testing, and configuration references |
 
-**Documentation:** see the [docs hub](docs/README.md) for architecture, settings, examples, and testing guides.
+## Ways to contribute
 
----
+Start from an approved or assigned issue when possible. For larger behavior or architecture changes, discuss the approach with maintainers before implementation.
 
-## How to Contribute
+| Type | Typical paths | Labels | Verify locally |
+| :--- | :--- | :--- | :--- |
+| Core framework | `rooms/agent.py`, `rooms/session.py`, `rooms/config.py` | `enhancement`, `session-logic` | Relevant unit tests plus the full suite |
+| CLI wizard | `cli.py`, `rooms/skills_cli.py` | `cli` | `tests/test_cli.py`, CLI settings smoke tests |
+| Settings | `rooms/settings.py`, `rooms.settings.example.yaml` | `enhancement`, `cli` | `tests/test_settings.py`, `tests/test_cli_settings_smoke.py` |
+| Documentation | `README.md`, `docs/`, `CONTRIBUTING.md` | `documentation` | Check internal links and run documentation tests |
+| Tests | `tests/test_*.py` | `testing` | Run the changed test and the full suite |
+| Bug fix | Paths identified by the issue | `bug` | Add a regression test that fails before the fix |
+| Good first issue | Usually focused docs, tests, or small fixes | `good first issue` | Follow the verification path for the underlying type |
 
-### Reporting Bugs
-Use the Bug Report template to describe the issue. Provide clear steps to reproduce the bug and include information about your environment (OS, Python version, Local LLM provider).
+## Getting started
 
-### Suggesting Enhancements
-Use the Feature Request template. Explain the motivation behind the suggestion and how it benefits the framework.
+### 1. Fork and clone
 
-### Pull Requests
-1. **Fork the Repository**: Create your own branch from `main`.
-2. **Implement Changes**: Follow the project's coding style and naming conventions.
-3. **Run Tests**: Ensure all existing tests pass by running:
-   ```bash
-   $env:PYTHONPATH="."; python -m pytest tests/ -v
-   ```
-4. **Add Tests**: If you are adding new logic, please include corresponding tests in `tests/test_session.py`.
-5. **Submit PR**: Provide a clear description of what the PR changes and why.
-6. **Update Changelog**: Please note that a project changelog exists at `CHANGELOG.md`. Contributors will be requested to update the `[Unreleased]` section of the changelog once official versioned releases begin.
----
+Fork [ARPAHLS/rooms](https://github.com/ARPAHLS/rooms), then clone your fork and register the upstream repository:
 
-## Design Philosophy
+```bash
+git clone https://github.com/<your-username>/rooms.git
+cd rooms
+git remote add upstream https://github.com/ARPAHLS/rooms.git
+```
 
-**Local-First**
-Always favor solutions that respect user privacy and offline execution.
+### 2. Sync and branch
 
-**Aesthetic Excellence**
-All CLI and documentation updates should prioritize a premium, modern feel.
+Create every branch from the latest upstream `main`:
 
-**Zero-Leakage**
-Be cautious with third-party integrations that might leak data.
+```bash
+git fetch upstream
+git checkout main
+git pull --ff-only upstream main
+git checkout -b feat/issue-47-short-description
+```
 
-## Automated Checks
-Every push and Pull Request is automatically verified by our GitHub Actions CI/CD pipeline, which runs:
-- **Style Checks**: Code formatting and linting via `flake8`.
-- **Logic Verification**: Full suite of `pytest` unit tests for turn orchestration, expertise scoring, and session memory.
+Use `<type>/issue-<number>-<short-description>`, with a focused prefix such as `feat`, `fix`, `docs`, or `test`. Do not work directly on `main`.
 
-Ensure your changes pass locally before submitting to maintain the build status.
+### 3. Install dependencies
 
-## Project Roadmap
-Check our [GitHub Issues](https://github.com/arpahls/Rooms/issues) to see what we are currently working on.
+Rooms targets Python 3.13. Create a virtual environment, then install runtime and contributor tools:
 
----
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install -r requirements.txt pytest flake8
+```
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/arpahls/cfd/main/assets/arpalogo26.png" width="40" alt="ARPA Logo">
-  <br>
-  <sub>Developed and Maintained by <b>ARPA HELLENIC LOGICAL SYSTEMS</b></sub>
-</div>
+## Universal expectations
+
+### Scope and style
+
+- Keep the diff limited to the issue's acceptance criteria; avoid unrelated refactors.
+- Match existing Python, Markdown, Pydantic, and CLI patterns in nearby files.
+- Add or update documentation when behavior, settings, or commands change.
+- Keep inference tests deterministic. Mock LiteLLM, Ollama, filesystem, and Skillware boundaries rather than calling live services.
+- Never commit API keys, `.env`, or `rooms.settings.yaml`. Credentials belong in the environment; see [Settings & preflight](docs/SETTINGS.md).
+
+### Changelog policy
+
+Update the `[Unreleased]` section of [CHANGELOG.md](CHANGELOG.md) when a PR changes user-visible behavior, configuration, CLI output, or documented workflows users rely on. Use the existing `Added`, `Changed`, or `Fixed` headings. Tests, internal refactors, and minor wording fixes usually do not need an entry. Do not create a release version heading unless a maintainer requests it.
+
+### Tests and CI
+
+Run the full suite and the CI-blocking Flake8 checks before opening a PR:
+
+```bash
+PYTHONPATH=. python -m pytest tests/ -v
+python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+```
+
+See [Testing Strategy](docs/TESTING.md) for focused commands and mocking examples. GitHub Actions repeats lint and test checks on pull requests.
+
+### Git authorship
+
+Use an email verified on your GitHub account so commits are attributed correctly. Check before committing:
+
+```bash
+git config user.name
+git config user.email
+```
+
+If needed, set a verified email with `git config user.email "you@example.com"`. GitHub's private `noreply` address is also acceptable when enabled in your [email settings](https://github.com/settings/emails).
+
+## Pull request process
+
+1. Link the assigned or approved issue using `Fixes #123` or `Refs #123`.
+2. Implement only the requested scope and add tests for behavior changes.
+3. Update `rooms.settings.example.yaml` when the supported settings schema changes.
+4. Update `[Unreleased]` when required by the changelog policy above.
+5. Run focused tests, the full test suite, and Flake8 locally.
+6. Commit with a short imperative subject such as `fix: handle empty persona list` or `docs: clarify settings precedence`.
+7. Push the branch to your fork and open a PR against `ARPAHLS/rooms` `main` using the [PR template](.github/PULL_REQUEST_TEMPLATE.md).
+8. Ensure CI passes and address review feedback on the same branch.
+
+PR descriptions should explain what changed, why it changed, and how it was verified. Include screenshots only when terminal output or another visible workflow changes.
+
+## Related documents
+
+| Document | Purpose |
+| :--- | :--- |
+| [Architecture](docs/ARCHITECTURE.md) | LiteLLM routing, sessions, orchestration, and storage |
+| [Examples](docs/EXAMPLES.md) | Scenario and parameter guidance |
+| [Settings & preflight](docs/SETTINGS.md) | YAML, environment variables, and Ollama checks |
+| [Testing Strategy](docs/TESTING.md) | Pytest scope, commands, and mocking patterns |
+| [Documentation hub](docs/README.md) | Index of all project guides |
+| [Agent contribution workflow (planned)](https://github.com/ARPAHLS/rooms/issues/48) | Tracks the dedicated workflow guide for contributing agents |
+| [Changelog](CHANGELOG.md) | Current `[Unreleased]` changes |
+| [Pull request template](.github/PULL_REQUEST_TEMPLATE.md) | Required PR summary and checklist |
+| [GitHub Issues](https://github.com/ARPAHLS/rooms/issues) | Open work and issue templates |
