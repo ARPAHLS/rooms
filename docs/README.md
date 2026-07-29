@@ -28,7 +28,7 @@ Welcome to the Rooms documentation hub. Start here to find the right guide by au
 
 ## Related issues
 
-- **Settings key semantics and override rules** are tracked separately from this hub; see the settings reference in [SETTINGS.md](SETTINGS.md) and `rooms.settings.example.yaml`.
+- **Settings key semantics and override rules** are documented in [Global defaults vs per-agent overrides](SETTINGS.md#global-defaults-vs-per-agent-overrides); use `rooms.settings.example.yaml` as the complete template.
 - **This hub** focuses on navigation and discoverability so architecture, examples, and configuration are easy to find in one place.
 
 ## Install paths
