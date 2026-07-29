@@ -1,4 +1,8 @@
-# Contributing to Rooms
+<div align="center">
+  <img src="assets/roomslogo.png" alt="Rooms Logo" width="200px" />
+
+  # Contributing to Rooms
+</div>
 
 Thank you for helping improve Rooms. This guide is the entry point for code, CLI, settings, documentation, and test contributions. Rooms is local-first: changes should preserve user privacy, predictable orchestration, and offline-friendly testing.
 
@@ -16,12 +20,14 @@ Thank you for helping improve Rooms. This guide is the entry point for code, CLI
 
 Start from an approved or assigned issue when possible. For larger behavior or architecture changes, discuss the approach with maintainers before implementation.
 
+Use the GitHub [Bug Report](https://github.com/ARPAHLS/rooms/issues/new?template=bug_report.yml) or [Feature Request](https://github.com/ARPAHLS/rooms/issues/new?template=feature_request.yml) template when opening new work.
+
 | Type | Typical paths | Labels | Verify locally |
 | :--- | :--- | :--- | :--- |
 | Core framework | `rooms/agent.py`, `rooms/session.py`, `rooms/config.py` | `enhancement`, `session-logic` | Relevant unit tests plus the full suite |
 | CLI wizard | `cli.py`, `rooms/skills_cli.py` | `cli` | `tests/test_cli.py`, CLI settings smoke tests |
 | Settings | `rooms/settings.py`, `rooms.settings.example.yaml` | `enhancement`, `cli` | `tests/test_settings.py`, `tests/test_cli_settings_smoke.py` |
-| Documentation | `README.md`, `docs/`, `CONTRIBUTING.md` | `documentation` | Check internal links and run documentation tests |
+| Documentation | `README.md`, `docs/`, `CONTRIBUTING.md` | `documentation` | Run `pytest tests/test_docs_hub.py -q` |
 | Tests | `tests/test_*.py` | `testing` | Run the changed test and the full suite |
 | Bug fix | Paths identified by the issue | `bug` | Add a regression test that fails before the fix |
 | Good first issue | Usually focused docs, tests, or small fixes | `good first issue` | Follow the verification path for the underlying type |
@@ -56,8 +62,8 @@ Use `<type>/issue-<number>-<short-description>`, with a focused prefix such as `
 Rooms targets Python 3.13. Create a virtual environment, then install runtime and contributor tools:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 python -m pip install -r requirements.txt pytest flake8
 ```
 
@@ -71,6 +77,12 @@ python -m pip install -r requirements.txt pytest flake8
 - Keep inference tests deterministic. Mock LiteLLM, Ollama, filesystem, and Skillware boundaries rather than calling live services.
 - Never commit API keys, `.env`, or `rooms.settings.yaml`. Credentials belong in the environment; see [Settings & preflight](docs/SETTINGS.md).
 
+### Design principles
+
+- **Local-first:** Prefer private, offline-capable workflows and local inference where practical.
+- **Zero-leakage:** Do not send user data or credentials to third parties without explicit configuration.
+- **Aesthetic CLI:** Keep terminal output clear, consistent, and polished when changing user-facing flows.
+
 ### Changelog policy
 
 Update the `[Unreleased]` section of [CHANGELOG.md](CHANGELOG.md) when a PR changes user-visible behavior, configuration, CLI output, or documented workflows users rely on. Use the existing `Added`, `Changed`, or `Fixed` headings. Tests, internal refactors, and minor wording fixes usually do not need an entry. Do not create a release version heading unless a maintainer requests it.
@@ -80,6 +92,7 @@ Update the `[Unreleased]` section of [CHANGELOG.md](CHANGELOG.md) when a PR chan
 Run the full suite and the CI-blocking Flake8 checks before opening a PR:
 
 ```bash
+PYTHONPATH=. python -m pytest tests/test_docs_hub.py -q  # documentation link checks
 PYTHONPATH=. python -m pytest tests/ -v
 python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 ```
@@ -123,3 +136,11 @@ PR descriptions should explain what changed, why it changed, and how it was veri
 | [Changelog](CHANGELOG.md) | Current `[Unreleased]` changes |
 | [Pull request template](.github/PULL_REQUEST_TEMPLATE.md) | Required PR summary and checklist |
 | [GitHub Issues](https://github.com/ARPAHLS/rooms/issues) | Open work and issue templates |
+
+---
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/arpahls/cfd/main/assets/arpalogo26.png" width="40" alt="ARPA Logo">
+  <br>
+  <sub>Developed and maintained by <b>ARPA HELLENIC LOGICAL SYSTEMS</b></sub>
+</div>
