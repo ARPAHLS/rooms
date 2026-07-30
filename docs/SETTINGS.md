@@ -41,6 +41,23 @@ python cli.py --config path/to/settings.yaml
 
 ---
 
+## Global defaults vs per-agent overrides
+
+The `defaults` block supplies values to the shipped personas, custom personas that omit the corresponding field, and the orchestrator where noted below. The wizard starts with those resolved values, but choices made there apply only to the current session; it does not write them back to `rooms.settings.yaml`.
+
+| YAML key | Used by default for | How it can be overridden |
+|----------|---------------------|--------------------------|
+| `defaults.litellm_model` | Shipped personas and custom personas with no `model` | A custom persona's `model`, or the custom-agent wizard's model prompt, for that agent only |
+| `defaults.timeout` | Shipped personas, custom personas, and the orchestrator | A programmatically constructed `AgentConfig` can set a per-agent value; the current YAML persona schema and wizard do not expose a timeout override |
+| `defaults.temperature` | Shipped personas and custom personas with no `temperature` | A custom persona's `temperature`, or the wizard's per-agent temperature prompt, for that session |
+| `defaults.orchestrator_model` | The orchestrator; falls back to `defaults.litellm_model` when omitted | The wizard's **Orchestrator Model** prompt, for that session |
+
+The orchestrator uses `defaults.timeout`, but currently uses a fixed temperature of `0.3` rather than `defaults.temperature`.
+
+To create a persistent local settings file, run `python cli.py config init`, then edit the generated file using [`rooms.settings.example.yaml`](../rooms.settings.example.yaml) as the reference. If no settings file is found, Rooms uses its built-in defaults; see [Settings search order](#settings-search-order).
+
+---
+
 ## YAML key reference
 
 Top-level keys in `rooms.settings.yaml`:
@@ -103,7 +120,7 @@ Override or replace shipped personas entirely when `use_shipped_personas: false`
 | `skills` | list[string] | no | Skillware skill IDs (e.g. `finance/wallet_screening`) |
 | `skill_settings` | object | no | Per-skill override map (`skill_id` → `{key: value}`) |
 
-**Override rule:** Persona-level `model` / `temperature` / `timeout` win over `defaults` for that agent only. Session wizard choices can still override per run.
+**Override rule:** Persona-level `model` and `temperature` win over `defaults` for that agent only. Persona timeout is not currently configurable in YAML. Session wizard choices apply only to that run.
 
 ---
 

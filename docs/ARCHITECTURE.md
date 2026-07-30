@@ -18,7 +18,7 @@ When the Agents reply to you in the terminal, it means your computer's local CPU
 
 ## User settings (optional)
 
-> **Full reference:** YAML keys, search paths, `.env`, and preflight are documented in [SETTINGS.md](SETTINGS.md).
+> **Full reference:** YAML keys, search paths, `.env`, and preflight are documented in [SETTINGS.md](SETTINGS.md). For configuration precedence, see [Global defaults vs per-agent overrides](SETTINGS.md#global-defaults-vs-per-agent-overrides).
 
 Default model strings, timeouts, user profile, and optional persona overrides are loaded from YAML at CLI startup (`rooms/settings.py`). **No file is required** — if `rooms.settings.yaml` is missing, built-in defaults apply (same values as `rooms.settings.example.yaml`).
 

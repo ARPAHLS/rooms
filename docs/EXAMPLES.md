@@ -19,6 +19,8 @@ The Multi-Agent Rooms framework is extremely versatile. This guide covers practi
 | `system_prompt` | Agent identity and role | The more vivid and specific, the more coherent the agent |
 | `rooms.settings.yaml` | Local defaults (optional) | Copy from `rooms.settings.example.yaml` or run `python cli.py config init`; set `defaults.litellm_model` to your Ollama tag |
 
+For the precedence of YAML defaults, persona fields, and session-only wizard choices, see [Global defaults vs per-agent overrides](SETTINGS.md#global-defaults-vs-per-agent-overrides).
+
 **Session Type Guide:**
 
 | Type | Best For |
