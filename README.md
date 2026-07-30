@@ -63,7 +63,7 @@ The framework allows extreme granularity in handling session configurations:
 | [Examples & best practices](docs/EXAMPLES.md) | Parameter cheat sheet, personas, scenarios, edge cases |
 | [Skillware integration](docs/SKILLWARE.md) | Skills CLI, wizard assignment, runtime behavior |
 | [Testing](docs/TESTING.md) | Pytest, mocking, CI smoke tests |
-| [Contributing](CONTRIBUTING.md) | Bugs, PRs, design philosophy |
+| [Contributing](CONTRIBUTING.md) | Contribution types, fork workflow, local checks, and PR process |
 | [Changelog](CHANGELOG.md) | Notable updates |
 
 ## Project Structure

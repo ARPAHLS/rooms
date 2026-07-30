@@ -22,7 +22,8 @@ Welcome to the Rooms documentation hub. Start here to find the right guide by au
 
 | Topic | Location |
 |-------|----------|
-| Contributing, design philosophy, PR workflow | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Contribution types, fork setup, local checks, and PR workflow | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Pull request description and review checklist | [Pull request template](../.github/PULL_REQUEST_TEMPLATE.md) |
 | Notable changes | [CHANGELOG.md](../CHANGELOG.md) |
 | Roadmap and open work | [GitHub Issues](https://github.com/arpahls/Rooms/issues) |
 
