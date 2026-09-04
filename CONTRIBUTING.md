@@ -136,6 +136,8 @@ PR descriptions should explain what changed, why it changed, and how it was veri
 | [Changelog](CHANGELOG.md) | Current `[Unreleased]` changes |
 | [Pull request template](.github/PULL_REQUEST_TEMPLATE.md) | Required PR summary and checklist |
 | [GitHub Issues](https://github.com/ARPAHLS/rooms/issues) | Open work and issue templates |
+| [Code of Conduct](CODE_OF_CONDUCT.md) | Standards for human and agent contributors |
+| [Security Policy](SECURITY.md) | How to report vulnerabilities |
 
 ---
 

@@ -64,6 +64,8 @@ The framework allows extreme granularity in handling session configurations:
 | [Skillware integration](docs/SKILLWARE.md) | Skills CLI, wizard assignment, runtime behavior |
 | [Testing](docs/TESTING.md) | Pytest, mocking, CI smoke tests |
 | [Contributing](CONTRIBUTING.md) | Contribution types, fork workflow, local checks, and PR process |
+| [Code of Conduct](CODE_OF_CONDUCT.md) | Community standards for human and agent contributors |
+| [Security Policy](SECURITY.md) | How to report vulnerabilities |
 | [Changelog](CHANGELOG.md) | Notable updates |
 
 ## Project Structure

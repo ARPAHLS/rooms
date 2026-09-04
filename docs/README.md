@@ -23,6 +23,8 @@ Welcome to the Rooms documentation hub. Start here to find the right guide by au
 | Topic | Location |
 |-------|----------|
 | Contribution types, fork setup, local checks, and PR workflow | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Community standards for human and agent contributors | [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) |
+| How to report security vulnerabilities | [SECURITY.md](../SECURITY.md) |
 | Pull request description and review checklist | [Pull request template](../.github/PULL_REQUEST_TEMPLATE.md) |
 | Notable changes | [CHANGELOG.md](../CHANGELOG.md) |
 | Roadmap and open work | [GitHub Issues](https://github.com/arpahls/Rooms/issues) |

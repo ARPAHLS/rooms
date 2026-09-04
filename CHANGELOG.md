@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - `docs/introduction.md` — short onboarding and quick start.
 - `docs/SETTINGS.md` — consolidated YAML key reference, `.env` guidance, and Ollama preflight documentation.
 - Created initial CHANGELOG.md structure following the Keep a Changelog standard.
+- **Docs:** `CODE_OF_CONDUCT.md` and `SECURITY.md` for community and vulnerability-reporting guidelines; linked from `CONTRIBUTING.md` (#50).
 
 ### Changed
 
