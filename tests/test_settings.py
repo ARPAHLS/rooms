@@ -1,10 +1,6 @@
-import os
-from pathlib import Path
-
 import pytest
 import yaml
 
-from rooms.config import AgentConfig
 from rooms.settings import (
     RoomsSettings,
     SettingsError,
@@ -55,6 +51,18 @@ def test_shipped_personas_use_defaults_model():
     assert len(personas) == len(SHIPPED_PERSONAS)
     assert all(p.model == "ollama/custom:7b" for p in personas)
     assert personas[0].name == "Elena (The Lawyer)"
+
+
+def test_disable_shipped_personas_with_empty_personas_returns_empty_list():
+    settings = RoomsSettings(use_shipped_personas=False, personas=[])
+    assert get_default_personas(settings) == []
+
+
+def test_disable_shipped_personas_without_personas_key_loads_empty_list(tmp_path):
+    cfg = tmp_path / "rooms.settings.yaml"
+    cfg.write_text("use_shipped_personas: false\n", encoding="utf-8")
+    settings = load_settings(str(cfg))
+    assert get_default_personas(settings) == []
 
 
 def test_custom_personas_from_yaml():

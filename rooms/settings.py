@@ -202,7 +202,7 @@ def get_default_personas(settings: RoomsSettings) -> List[AgentConfig]:
         return [persona_settings_to_agent_config(p, settings.defaults) for p in settings.personas]
     if settings.use_shipped_personas:
         return _shipped_persona_dicts_to_configs(settings.defaults)
-    return _shipped_persona_dicts_to_configs(settings.defaults)
+    return []
 
 
 def resolve_preset_model(settings: RoomsSettings, preset_name: str) -> str:
