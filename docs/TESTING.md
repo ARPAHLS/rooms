@@ -120,3 +120,9 @@ assert t2.get("skipped") is True
 # Test timestamp presence
 assert "timestamp" in t1
 ```
+
+## Contributing & PR Guidelines
+
+### Changelog expectations
+
+Changelog rules: see [CONTRIBUTING → Changelog policy](../CONTRIBUTING.md#changelog-policy).
