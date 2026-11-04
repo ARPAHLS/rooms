@@ -143,3 +143,25 @@ To ensure the framework remains stable as it grows, we maintain a comprehensive 
 - **Linting**: High-standard code hygiene via `flake8`.
 - **Logic Robustness**: Detailed edge-case testing including word-boundary expertise matching and non-repeating HITL triggers.
 - **Regression Testing**: Ensuring core orchestration types (Round Robin, Dynamic, Argumentative) remain deterministic.
+
+## The ARPA stack
+
+Rooms is one of four independent packages that make up the ARPA stack. Each owns a distinct layer, and none requires the others at runtime — memory can live in MnemoLink alone, audit in AURA alone, and Rooms still runs.
+
+| Layer | Job | Rooms hook |
+|-------|-----|------------|
+| **Rooms** | Turns, human-in-the-loop, routing, transcripts | `session.py`, `cli.py` |
+| **Skillware** | Tools and actions | `skills_runtime.py` |
+| **MnemoLink** | Persona and memory composition | `AgentConfig` / prompt build |
+| **AURA** | Audit and policy at trust boundaries | wrap turn and tool egress |
+
+The split matters when extending Rooms: a contributor who wants agent memory should not add it to `Session`, and a contributor who wants audit logs should not add them to `Agent`. Those belong in the layer that owns them, connected by the hooks in the table above.
+
+| Package | Repository |
+|---------|------------|
+| Rooms | https://github.com/ARPAHLS/rooms |
+| Skillware | https://github.com/ARPAHLS/skillware |
+| MnemoLink | https://github.com/ARPAHLS/mnemolink |
+| AURA | https://github.com/ARPAHLS/aura |
+
+See [the ecosystem issue](https://github.com/ARPAHLS/rooms/issues/71) for the reasoning behind this split.

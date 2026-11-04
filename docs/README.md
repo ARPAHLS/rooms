@@ -15,6 +15,7 @@ Welcome to the Rooms documentation hub. Start here to find the right guide by au
 | Topic | Guide |
 |-------|--------|
 | LiteLLM routing, session memory, orchestration, transcripts | [Architecture](ARCHITECTURE.md) |
+| How Rooms fits the ARPA stack (Skillware, MnemoLink, AURA) | [The ARPA stack](ARCHITECTURE.md#the-arpa-stack) |
 | Skillware skills CLI, wizard assignment, runtime behavior | [Skillware integration](SKILLWARE.md) |
 | Pytest strategy, mocking, CI smoke tests | [Testing](TESTING.md) |
 
