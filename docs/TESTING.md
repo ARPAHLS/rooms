@@ -117,13 +117,12 @@ agent2.generate_response = MagicMock(return_value="PASS")
 t2 = session.generate_next_turn()
 assert t2.get("skipped") is True
 
-```
 # Test timestamp presence
 assert "timestamp" in t1
-
+```
 
 ## Contributing & PR Guidelines
 
 ### Changelog expectations
 
-Tests and internal refactors usually do **not** need a `[Unreleased]` entry. If your change alters user-visible behavior, configuration, CLI output, or a documented workflow, add a line under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) in the same PR. See the [Changelog policy](../CONTRIBUTING.md#changelog-policy) in `CONTRIBUTING.md`.
+Changelog rules: see [CONTRIBUTING → Changelog policy](../CONTRIBUTING.md#changelog-policy).

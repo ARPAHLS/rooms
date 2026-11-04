@@ -15,7 +15,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Rooms-native Skillware CLI wrapper and wizard skill assignment (#61).
 - Session Skill UX for skills list, inspect, and suggest (#60).
 - Ollama preflight checks with `--skip-preflight` flag (#36, #43).
-- Test coverage for settings, CLI smoke tests, session logic, and Skillware UX (#35).
+- Test coverage for settings, CLI smoke tests, session logic, and Skillware UX.
 - Documentation hub at `docs/README.md` with introduction, settings reference, and cross-links to all guides.
 - `docs/introduction.md` — short onboarding and quick start.
 - `docs/SETTINGS.md` — consolidated YAML key reference, `.env` guidance, and Ollama preflight documentation.
